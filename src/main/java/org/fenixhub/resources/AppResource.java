@@ -63,7 +63,8 @@ public class AppResource {
 
     @GET
     @CacheResult(cacheName = "app-download-chunk")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces("application/x-tar")
     @Path("/{appName}")
     public Response downloadChunk(
         @PathParam("appName") String appName,
@@ -85,6 +86,7 @@ public class AppResource {
             .header("X-Chunk-Size", appChunk.getData().length)
             .header("X-Chunks", downloadingChunk + "/" + appChunks)
             .header("Content-Disposition", "attachment; filename=\""+appChunk.getAppArchive()+"\"")
+            .header("Content-Encoding", appService.compressionType)
             .build();
     }
 

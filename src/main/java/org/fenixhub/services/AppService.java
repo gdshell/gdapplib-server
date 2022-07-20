@@ -41,8 +41,8 @@ public class AppService {
     @ConfigProperty(name = "app.archive.type", defaultValue = "tar")
     private String archiveType;
 
-    @ConfigProperty(name = "app.compression.type", defaultValue = "gzip")
-    private String compressionType;
+    @ConfigProperty(name = "app.compression.type", defaultValue = "br")
+    public String compressionType;
 
 
     private Path getPathOfApp(String appName) {
