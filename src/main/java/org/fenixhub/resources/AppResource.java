@@ -84,6 +84,7 @@ public class AppResource {
                 "/" + appChunk.getAppSize())
             .header("X-Chunk-Size", appChunk.getData().length)
             .header("X-Chunks", downloadingChunk + "/" + appChunks)
+            .header("Content-Disposition", "attachment; filename=\""+appChunk.getAppArchive()+"\"")
             .build();
     }
 

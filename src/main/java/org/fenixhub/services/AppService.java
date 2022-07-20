@@ -139,15 +139,15 @@ public class AppService {
 
     public AppChunkDto getAppChunk(String appName, String range) {
         long[] rangeLongValues = new long[2];
-        long appSize = getAppSize(appName);
+        AppMetadataDto appMetadataDto = getAppMetadata(appName);
         
         if (range != null) {
             rangeLongValues = getRangeLongValues(range);
-            rangeLongValues[0] = Math.min(rangeLongValues[0], appSize);
-            rangeLongValues[1] = Math.min(rangeLongValues[1], appSize);
+            rangeLongValues[0] = Math.min(rangeLongValues[0], appMetadataDto.getSize());
+            rangeLongValues[1] = Math.min(rangeLongValues[1], appMetadataDto.getSize());
         } else {
             rangeLongValues[0] = 0;
-            rangeLongValues[1] = (int) appSize - 1;
+            rangeLongValues[1] = appMetadataDto.getSize() - 1;
         }
 
         byte[] bytes = new byte[(int) (rangeLongValues[1] - rangeLongValues[0] + 1)];
@@ -160,10 +160,11 @@ public class AppService {
         String hash = getHashOfBytes(bytes);
 
         return AppChunkDto.builder()
+        .appArchive(appMetadataDto.getArchiveName()+"."+appMetadataDto.getArchiveFormat())
         .data(bytes)
         .chunkIndexes(rangeLongValues)
         .hash(hash)
-        .appSize(appSize)
+        .appSize(appMetadataDto.getSize())
         .build();
     }
 
