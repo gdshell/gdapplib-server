@@ -131,7 +131,7 @@
       </activation>
       <properties>
         <skipITs>false</skipITs>
-        <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.app.type>native</quarkus.app.type>
       </properties>
     </profile>
   </profiles>
