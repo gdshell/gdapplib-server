@@ -8,12 +8,14 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -25,6 +27,7 @@ import org.fenixhub.dto.AppChunkDto;
 import org.fenixhub.dto.AppDto;
 import org.fenixhub.dto.AppMetadataDto;
 import org.fenixhub.services.AppService;
+import org.fenixhub.utils.Helpers;
 
 import io.quarkus.cache.CacheResult;
 
@@ -33,6 +36,9 @@ public class AppResource {
 
     @Inject
     private AppService appService;
+
+    @Inject
+    private Helpers helpers;
 
     @HEAD
     @CacheResult(cacheName = "app-info")
@@ -43,7 +49,7 @@ public class AppResource {
     ) {
         AppMetadataDto appMetadataDto = appService.getAppMetadata(appName);
         return Response.ok()
-            .header("Accept-Ranges", appService.RANGE_UNITS)
+            .header("Accept-Ranges", helpers.RANGE_UNITS)
             .header("X-App-Size", appMetadataDto.getSize())
             .tag(appMetadataDto.getHash())
             .build();
@@ -81,13 +87,24 @@ public class AppResource {
             .entity(Base64.getEncoder().encodeToString(appChunk.getData()))
             .tag(appChunk.getHash())
             .header("Content-Range",
-                appService.RANGE_UNITS + " " + appChunk.getChunkIndexes()[0] + "-" + appChunk.getChunkIndexes()[1] + 
+                helpers.RANGE_UNITS + " " + appChunk.getChunkIndexes()[0] + "-" + appChunk.getChunkIndexes()[1] + 
                 "/" + appChunk.getAppSize())
             .header("X-Chunk-Size", appChunk.getData().length)
             .header("X-Chunks", downloadingChunk + "/" + appChunks)
             .header("Content-Disposition", "attachment; filename=\""+appChunk.getAppArchive()+"\"")
             .header("Content-Encoding", appService.compressionType)
             .build();
+    }
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("")
+    public Response registerApp(
+        @NotNull AppDto appDto
+    ) {
+        AppDto app = appService.registerApp(appDto);
+        return Response.ok(app).build();
     }
 
     @POST
