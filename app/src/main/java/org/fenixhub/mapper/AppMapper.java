@@ -10,4 +10,5 @@ public interface AppMapper {
     AppMapper INSTANCE = Mappers.getMapper( AppMapper.class ); 
  
     AppDto appToAppDto(App app);
+    App appDtoToApp(AppDto appDto);
 }

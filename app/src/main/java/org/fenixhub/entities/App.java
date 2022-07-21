@@ -4,15 +4,18 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import lombok.Builder;
 import lombok.Data;
 
-@Entity
-@Table(name = "app")
 @Data
 @Builder
+
+@Entity
+@Table(name = "app")
+@NamedQuery(name = "App.findByName", query = "SELECT a FROM App a WHERE a.name = :name")
 public class App {
 
     @Id
@@ -21,6 +24,9 @@ public class App {
 
     @Column(name = "name", nullable = false)
     private String name;
+    
+    @Column(name = "archive", nullable = false)
+    private String archive;
     
     @Column(name = "developer", nullable = false)
     private String developer;

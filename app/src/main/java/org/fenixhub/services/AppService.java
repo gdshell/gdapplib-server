@@ -18,6 +18,7 @@ import org.fenixhub.dto.AppDto;
 import org.fenixhub.dto.AppMetadataDto;
 import org.fenixhub.entities.App;
 import org.fenixhub.mapper.AppMapper;
+import org.fenixhub.repository.AppRepository;
 import org.fenixhub.utils.ChunkManager;
 import org.fenixhub.utils.Helpers;
 import org.jboss.logging.Logger;
@@ -33,18 +34,17 @@ public class AppService {
     @ConfigProperty(name = "app.compression.type", defaultValue = "br")
     public String compressionType;
 
-
-    @Inject
-    private EntityManager entityManager;
-
     @Inject
     private ChunkManager chunkManager;
-
+    
     @Inject
     private Helpers helpers;
     
+    @Inject
+    private AppRepository appRepository;
+
     public AppDto registerApp(AppDto appDto) {
-        if (entityManager.find(App.class, appDto.getName()) != null) {
+        if (appRepository.findByName(appDto.getName()) != null) {
             throw new BadRequestException("App already exists.");
         }
 
@@ -53,9 +53,51 @@ public class AppService {
         .developer(appDto.getDeveloper())
         .publishedAt(helpers.today.apply(0L))
         .build();
-        entityManager.persist(app);
+        appRepository.persist(app);
 
         return AppMapper.INSTANCE.appToAppDto(app);
+    }
+
+    public void saveAppChunk(String appName, String archive, String contentRange, byte[] bytes) {
+        App app = appRepository.findByName(appName);
+        if (app == null) {
+            throw new BadRequestException("App does not exist.");
+        }
+
+        if (!archive.endsWith("." + archiveType + "." + compressionType)) {
+            throw new BadRequestException("Could not save app chunk. Archive type must be " + archiveType + 
+            " and compression type must be " + compressionType + ".");
+        }
+
+        long[] rangeLongValues = new long[2];
+        long appSize = -1;
+
+        if (contentRange != null) {
+            long[] contentRangeLongValues = helpers.getContentRangeLongValues(contentRange);
+            rangeLongValues[0] = contentRangeLongValues[0];
+            rangeLongValues[1] = contentRangeLongValues[1];
+            appSize = contentRangeLongValues[2];
+        } else {
+            appSize = Base64.getDecoder().decode(bytes).length;
+            rangeLongValues[0] = 0;
+            rangeLongValues[1] = (int) appSize - 1;
+        }
+
+        Path appPath = helpers.getPathOfApp(archive);
+        if (!Files.exists(appPath)) {
+            try {
+                Files.createDirectories(appPath.getParent());
+                Files.createFile(appPath);
+                byte[] dummyBytes = new byte[(int) appSize];
+                Files.write(appPath, dummyBytes);
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Could not create app.", e);
+            }
+            app.setArchive(archive);
+            appRepository.update(app);
+        }
+
+        chunkManager.chunkedWriteBytesToFile(appPath, appSize, Base64.getDecoder().decode(bytes), rangeLongValues[0], rangeLongValues[1]);
     }
 
     public AppChunkDto getAppChunk(String appName, String range) {
@@ -89,41 +131,7 @@ public class AppService {
         .build();
     }
 
-    public void saveAppChunk(String appName, String archive, String contentRange, byte[] bytes) {
-        if (!archive.endsWith("." + archiveType + "." + compressionType)) {
-            throw new BadRequestException("Could not save app chunk. Archive type must be " + archiveType + 
-            " and compression type must be " + compressionType + ".");
-        }
 
-        long[] rangeLongValues = new long[2];
-        long appSize = -1;
-
-        if (contentRange != null) {
-            long[] contentRangeLongValues = helpers.getContentRangeLongValues(contentRange);
-            rangeLongValues[0] = contentRangeLongValues[0];
-            rangeLongValues[1] = contentRangeLongValues[1];
-            appSize = contentRangeLongValues[2];
-        } else {
-            appSize = Base64.getDecoder().decode(bytes).length;
-            rangeLongValues[0] = 0;
-            rangeLongValues[1] = (int) appSize - 1;
-        }
-
-        Path appPath = helpers.getPathOfApp(archive);
-        if (!Files.exists(appPath)) {
-            // preallocate file size
-            try {
-                Files.createDirectories(appPath.getParent());
-                Files.createFile(appPath);
-                byte[] dummyBytes = new byte[(int) appSize];
-                Files.write(appPath, dummyBytes);
-            } catch (IOException e) {
-                throw new InternalServerErrorException("Could not create app.", e);
-            }
-        }
-
-        chunkManager.chunkedWriteBytesToFile(appPath, appSize, Base64.getDecoder().decode(bytes), rangeLongValues[0], rangeLongValues[1]);
-    }
 
     public AppDto getAppInfo(String appName) {
         return AppDto.builder()

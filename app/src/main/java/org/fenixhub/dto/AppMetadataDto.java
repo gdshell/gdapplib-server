@@ -14,12 +14,6 @@ public class AppMetadataDto {
     private Long appId;
     
     @NotEmpty
-    private String archiveName;
-    
-    @NotEmpty
-    private String archiveFormat;
-    
-    @NotEmpty
     private String hash;
     
     @NotNull

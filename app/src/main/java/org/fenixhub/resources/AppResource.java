@@ -123,7 +123,7 @@ public class AppResource {
 
     @PATCH
     @Consumes("message/byterange")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{appName}")
     public Response uploadChunk(
         @PathParam("appName") String appName,
