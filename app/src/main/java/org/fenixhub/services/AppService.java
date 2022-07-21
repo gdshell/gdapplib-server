@@ -8,7 +8,6 @@ import java.util.Base64;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 
