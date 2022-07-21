@@ -43,11 +43,11 @@ public class AppResource {
     @HEAD
     @CacheResult(cacheName = "app-info")
     @Produces(MediaType.TEXT_PLAIN)
-    @Path("/{appName}")
+    @Path("/{appId}")
     public Response getAppMetadata(
-        @PathParam("appName") String appName
+        @PathParam("appId") Long appId
     ) {
-        AppMetadataDto appMetadataDto = appService.getAppMetadata(appName);
+        AppMetadataDto appMetadataDto = appService.getAppMetadata(appId);
         return Response.ok()
             .header("Accept-Ranges", helpers.RANGE_UNITS)
             .header("X-App-Size", appMetadataDto.getSize())
@@ -58,11 +58,11 @@ public class AppResource {
     @GET
     @CacheResult(cacheName = "app-info")
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{appName}/info")
+    @Path("/{appId}/info")
     public Response getAppInfo(
-        @PathParam("appName") String appName
+        @PathParam("appId") Long appId
     ) {
-        AppDto appMetadata = appService.getAppInfo(appName);
+        AppDto appMetadata = appService.getAppInfo(appId);
         return Response.ok(appMetadata)
         .build();
     }
@@ -71,17 +71,17 @@ public class AppResource {
     @CacheResult(cacheName = "app-download-chunk")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/x-tar")
-    @Path("/{appName}")
+    @Path("/{appId}")
     public Response downloadChunk(
-        @PathParam("appName") String appName,
+        @PathParam("appId") Long appId,
         @HeaderParam("Range") String range
     ) {
         
-        AppChunkDto appChunk = appService.getAppChunk(appName, range);
+        AppChunkDto appChunk = appService.getAppChunk(appId, range);
 
         long appChunks = appChunk.getAppSize() / appChunk.getData().length;
         long downloadingChunk = appChunk.getChunkIndexes()[0] / appChunk.getData().length;
-
+        
         return Response
             .status(appChunk.getData().length < appChunk.getAppSize() ? Status.PARTIAL_CONTENT : Status.OK)
             .entity(Base64.getEncoder().encodeToString(appChunk.getData()))
@@ -124,14 +124,14 @@ public class AppResource {
     @PATCH
     @Consumes("message/byterange")
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{appName}")
+    @Path("/{appId}")
     public Response uploadChunk(
-        @PathParam("appName") String appName,
+        @PathParam("appId") Long appId,
         @HeaderParam("X-Archive") @NotBlank String archive,
         @HeaderParam("Content-Range") String contentRange,
         @NotEmpty byte[] data
     ) {
-        appService.saveAppChunk(appName, archive, contentRange, data);
+        appService.saveAppChunk(appId, archive, contentRange, data);
         return Response.ok().build();
     }
 

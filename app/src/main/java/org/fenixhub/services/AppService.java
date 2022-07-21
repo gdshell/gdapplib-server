@@ -43,6 +43,7 @@ public class AppService {
     @Inject
     private AppRepository appRepository;
 
+
     public AppDto registerApp(AppDto appDto) {
         if (appRepository.findByName(appDto.getName()) != null) {
             throw new BadRequestException("App already exists.");
@@ -58,8 +59,8 @@ public class AppService {
         return AppMapper.INSTANCE.appToAppDto(app);
     }
 
-    public void saveAppChunk(String appName, String archive, String contentRange, byte[] bytes) {
-        App app = appRepository.findByName(appName);
+    public void saveAppChunk(Long appId, String archive, String contentRange, byte[] bytes) {
+        App app = appRepository.findById(appId);
         if (app == null) {
             throw new BadRequestException("App does not exist.");
         }
@@ -100,9 +101,14 @@ public class AppService {
         chunkManager.chunkedWriteBytesToFile(appPath, appSize, Base64.getDecoder().decode(bytes), rangeLongValues[0], rangeLongValues[1]);
     }
 
-    public AppChunkDto getAppChunk(String appName, String range) {
+    public AppChunkDto getAppChunk(Long appId, String range) {
+        App app = appRepository.findById(appId);
+        if (app == null) {
+            throw new BadRequestException("App does not exist.");
+        }
+        
         long[] rangeLongValues = new long[2];
-        AppMetadataDto appMetadataDto = getAppMetadata(appName);
+        AppMetadataDto appMetadataDto = getAppMetadata(appId);
         
         if (range != null) {
             rangeLongValues = helpers.getRangeLongValues(range);
@@ -115,7 +121,7 @@ public class AppService {
 
         byte[] bytes = new byte[(int) (rangeLongValues[1] - rangeLongValues[0] + 1)];
         try {
-            bytes = chunkManager.chunkedReadBytesFromFile(helpers.getPathOfApp(appName).toUri().toURL(), rangeLongValues[0], rangeLongValues[1] + 1);
+            bytes = chunkManager.chunkedReadBytesFromFile(helpers.getPathOfApp(appMetadataDto.getArchive()).toUri().toURL(), rangeLongValues[0], rangeLongValues[1] + 1);
         } catch (MalformedURLException e) {
             throw new InternalServerErrorException("Malformed file URL.", e);
         }
@@ -123,7 +129,7 @@ public class AppService {
         String hash = helpers.getHashOfBytes(bytes);
 
         return AppChunkDto.builder()
-        .appArchive(appMetadataDto.getArchiveName()+"."+appMetadataDto.getArchiveFormat())
+        .appArchive(appMetadataDto.getArchive())
         .data(bytes)
         .chunkIndexes(rangeLongValues)
         .hash(hash)
@@ -131,22 +137,22 @@ public class AppService {
         .build();
     }
 
-
-
-    public AppDto getAppInfo(String appName) {
-        return AppDto.builder()
-        .name(appName)
-        .developer("developer")
-        .build();
+    public AppDto getAppInfo(Long appId) {
+        App app = appRepository.findById(appId);
+        if (app == null) {
+            throw new BadRequestException("App does not exist.");
+        }
+        /* Convert App to AppDto */
+        return AppDto.builder().build();
     }
 
-    public AppMetadataDto getAppMetadata(String appName) {
-        return AppMetadataDto.builder()
-        .size(helpers.getAppSize(appName))
-        .archiveName(appName.split(".")[0])
-        .archiveFormat(appName.split(".")[1])
-        .hash(helpers.getAppHash(appName))
-        .build();
+    public AppMetadataDto getAppMetadata(Long appId) {
+        App app = appRepository.findById(appId);
+        if (app == null) {
+            throw new BadRequestException("App does not exist.");
+        }
+        /* Metadata that must be returned directly from the archive */
+        return AppMetadataDto.builder().build();
     }
 
 }

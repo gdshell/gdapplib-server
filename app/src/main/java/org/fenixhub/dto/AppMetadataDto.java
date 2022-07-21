@@ -1,5 +1,6 @@
 package org.fenixhub.dto;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 
 import io.smallrye.common.constraint.NotNull;
@@ -13,6 +14,9 @@ public class AppMetadataDto {
     @NotNull
     private Long appId;
     
+    @NotBlank
+    private String archive;
+
     @NotEmpty
     private String hash;
     

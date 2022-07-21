@@ -19,9 +19,6 @@ public class AppDto {
     
     @NotBlank
     private String name;
-    
-    @NotBlank
-    private String archive;
 
     @NotBlank
     private String developer;
