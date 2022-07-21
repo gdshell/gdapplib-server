@@ -1,0 +1,5 @@
+FROM postgres:latest-alpine
+
+COPY ../sql/99-init.sql /docker-entrypoint-initdb.d/99-init.sql
+
+EXPOSE 5432

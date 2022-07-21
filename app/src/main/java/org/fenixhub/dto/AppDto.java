@@ -21,7 +21,7 @@ public class AppDto {
     @NotBlank
     private String developer;
 
-
-    private Long lastUpdated;
+    private Long publishedAt;
+    private Long updatedAt;
 
 }
