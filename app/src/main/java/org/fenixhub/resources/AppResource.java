@@ -13,6 +13,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -67,6 +68,16 @@ public class AppResource {
         .build();
     }
 
+    /*
+     * GET /app/{appId}
+     * 
+     * Download a chunk of the app.
+     * 
+     * @param appId The id of the app
+     * @param range The "Range" header value (e.g. "bytes=0-1023")
+     * 
+     * @return The app chunk
+     */
     @GET
     @CacheResult(cacheName = "app-download-chunk")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -86,16 +97,28 @@ public class AppResource {
             .status(appChunk.getData().length < appChunk.getAppSize() ? Status.PARTIAL_CONTENT : Status.OK)
             .entity(Base64.getEncoder().encodeToString(appChunk.getData()))
             .tag(appChunk.getHash())
+            // Specify the range of the chunk in the response header "Content-Range"
             .header("Content-Range",
                 helpers.RANGE_UNITS + " " + appChunk.getChunkIndexes()[0] + "-" + appChunk.getChunkIndexes()[1] + 
                 "/" + appChunk.getAppSize())
+            // Specify the total size of the downloading chunk in the response header "X-Chunk-Size"
             .header("X-Chunk-Size", appChunk.getData().length)
-            .header("X-Chunks", downloadingChunk + "/" + appChunks)
+            // Specify the index of the downloading chunk over the total number of chunks in the response header "X-Chunks-Count"
+            .header("X-Chunks-Count", downloadingChunk + "/" + appChunks)
+            // Specify how the chunk should be served in the response header "Content-Disposition"
             .header("Content-Disposition", "attachment; filename=\""+appChunk.getAppArchive()+"\"")
+            // Specify the encoding of the chunk in the response header "Content-Encoding"
             .header("Content-Encoding", appService.compressionType)
             .build();
     }
 
+    /*
+     * PUT /app
+     * 
+     * Register a new app.
+     * 
+     * @param appDto The app to register.
+     */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -104,23 +127,27 @@ public class AppResource {
         @NotNull AppDto appDto
     ) {
         AppDto app = appService.registerApp(appDto);
-        return Response.ok(app).build();
+        URI location;
+        try {
+            location = new URI("/app/"+app.getId().toString());
+        } catch (URISyntaxException e) {
+            throw new InternalServerErrorException("Could not create URI for app.", e);
+        }
+        return Response.ok(app).location(location).build();
     }
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("")
-    public Response setAppInfo(
-        @Valid AppDto appInfoDto
-    ) throws URISyntaxException {
-        URI location = new URI("/app/"+appInfoDto.getName());
-        return Response
-            .ok()
-            .location(location)
-            .build();
-    }
 
+    /*
+     * PATCH /app/{appId}
+     * 
+     * Upload a chunk of the archive related to an existing app.
+     * 
+     * @param appId The id of the app
+     * @param archive The "X-Archive" header value, with the full name of the archive (ex. "app.tar.br")
+     * @param contentRange The "Content-Range" header value, with the range of the chunk (ex. "bytes 0-10/100")
+     * @param chunk The "X-Chunk" header value, with the index of the chunk (ex. "0")
+     * @param data The chunk of the archive
+     */
     @PATCH
     @Consumes("message/byterange")
     @Produces(MediaType.APPLICATION_JSON)
@@ -129,6 +156,7 @@ public class AppResource {
         @PathParam("appId") Long appId,
         @HeaderParam("X-Archive") @NotBlank String archive,
         @HeaderParam("Content-Range") String contentRange,
+        @HeaderParam("X-Chunk") Long chunk,
         @NotEmpty byte[] data
     ) {
         appService.saveAppChunk(appId, archive, contentRange, data);
