@@ -10,6 +10,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.fenixhub.dto.AppChunkDto;
@@ -73,7 +74,7 @@ public class AppService {
     public void updateApp(Long appId, AppDto appDto) {
         App app = appRepository.findById(appId);
         if (app == null) {
-            throw new BadRequestException("App does not exist.");
+            throw new NotFoundException("App does not exist.");
         }
 
         if (appDto.getName() != null) {
@@ -95,7 +96,7 @@ public class AppService {
     public void saveAppChunk(Long appId, String archive, String contentRange, byte[] bytes) {
         App app = appRepository.findById(appId);
         if (app == null) {
-            throw new BadRequestException("App does not exist.");
+            throw new NotFoundException("App does not exist.");
         }
 
         if (!archive.endsWith("." + archiveType + "." + compressionType)) {
@@ -140,7 +141,7 @@ public class AppService {
     public AppChunkDto getAppChunk(Long appId, String range) {
         App app = appRepository.findById(appId);
         if (app == null) {
-            throw new BadRequestException("App does not exist.");
+            throw new NotFoundException("App does not exist.");
         }
         
         long[] rangeLongValues = new long[2];
@@ -176,7 +177,7 @@ public class AppService {
     public AppDto getAppInfo(Long appId) {
         App app = appRepository.findById(appId);
         if (app == null) {
-            throw new BadRequestException("App does not exist.");
+            throw new NotFoundException("App does not exist.");
         }
 
         return AppMapper.INSTANCE.appToAppDto(app);
@@ -185,7 +186,7 @@ public class AppService {
     public AppMetadataDto getAppMetadata(Long appId) {
         App app = appRepository.findById(appId);
         if (app == null) {
-            throw new BadRequestException("App does not exist.");
+            throw new NotFoundException("App does not exist.");
         }
 
         Path appPath = helpers.getPathOfAppArchive(appId, app.getArchive());

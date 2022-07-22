@@ -1,4 +1,4 @@
-FROM postgres:latest-alpine
+FROM postgres:14.4-alpine
 
 COPY ../sql/99-init.sql /docker-entrypoint-initdb.d/99-init.sql
 
