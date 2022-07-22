@@ -28,9 +28,16 @@ public class Helpers {
     private String hashAlgorithm;
 
 
-    public Path getPathOfApp(String appName) {
-        Path appPath = Path.of(System.getProperty("user.home"), appRootFolder, appName);
-        return appPath;
+    public Path getAppRootFolder() {
+        return Path.of(System.getProperty("user.home"));
+    }
+
+    public Path getPathOfApp(Long appId) {
+        return getAppRootFolder().resolve(appId.toString());
+    }
+
+    public Path getPathOfAppArchive(Long appId, String archive) {
+        return getPathOfApp(appId).resolve(archive);
     }
     
     public String getHashOfBytes(byte[] bytes) {
@@ -43,29 +50,36 @@ public class Helpers {
         return Base64.getEncoder().encodeToString(digest);
     }
 
-    public long getAppSize(String appName) {
+    public long getAppSize(Path appArchivePath) {
         long size = -1;
-        Path appPath = getPathOfApp(appName);
-        if (!Files.exists(appPath)) {
+        if (!Files.exists(appArchivePath)) {
             throw new NotFoundException("App does not exist.");
         }
         try {
-            size = Files.size(appPath);
+            size = Files.size(appArchivePath);
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not read size of app.", e);
         }
-        return size;
+        return size;    
     }
 
-    public String getAppHash(String appName) {
+    public long getAppSize(Long appId, String archive) {
+        return getAppSize(getPathOfAppArchive(appId, archive));
+    }
+
+    public String getAppHash(Path appArchivePath) {
         String hash = null;
         try {
-            InputStream is = Files.newInputStream(getPathOfApp(appName));
+            InputStream is = Files.newInputStream(appArchivePath);
             hash = getHashOfBytes(is.readAllBytes());
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not read file.", e);
         }
         return hash;
+    }
+
+    public String getAppHash(Long appId, String archive) {
+        return getAppHash(getPathOfAppArchive(appId, archive));
     }
 
     public long[] getRangeLongValues(String range) {

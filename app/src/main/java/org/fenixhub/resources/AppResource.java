@@ -39,6 +39,15 @@ public class AppResource {
     @Inject
     private Helpers helpers;
 
+    /*
+     * HEAD /app/{appId}
+     * 
+     * Returns the metadata of the app.
+     * 
+     * @param appId The id of the app.
+     * 
+     * @return The metadata of the app.
+     */
     @HEAD
     @CacheResult(cacheName = "app-info")
     @Produces(MediaType.TEXT_PLAIN)
@@ -54,6 +63,15 @@ public class AppResource {
             .build();
     }
 
+    /*
+     * GET /app/{appId}/info
+     * 
+     * Get the app info.
+     *
+     * @param appId the app id
+     * 
+     * @return the app info
+     */
     @GET
     @CacheResult(cacheName = "app-info")
     @Produces(MediaType.APPLICATION_JSON)
@@ -61,15 +79,15 @@ public class AppResource {
     public Response getAppInfo(
         @PathParam("appId") Long appId
     ) {
-        AppDto appMetadata = appService.getAppInfo(appId);
-        return Response.ok(appMetadata)
+        AppDto appDto = appService.getAppInfo(appId);
+        return Response.ok(appDto)
         .build();
     }
 
     /*
      * GET /app/{appId}
      * 
-     * Download a chunk of the app.
+     * Download a chunk of the app in Base64 encoded format.
      * 
      * @param appId The id of the app
      * @param range The "Range" header value (e.g. "bytes=0-1023")
@@ -144,7 +162,7 @@ public class AppResource {
      * @param archive The "X-Archive" header value, with the full name of the archive (ex. "app.tar.br")
      * @param contentRange The "Content-Range" header value, with the range of the chunk (ex. "bytes 0-10/100")
      * @param chunk The "X-Chunk" header value, with the index of the chunk (ex. "0")
-     * @param data The chunk of the archive
+     * @param data The chunk of the archive in Base64 encoding
      */
     @PATCH
     @Consumes("message/byterange")

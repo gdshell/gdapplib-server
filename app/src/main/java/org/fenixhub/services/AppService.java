@@ -43,6 +43,11 @@ public class AppService {
     private AppRepository appRepository;
 
 
+    /*
+     * Create a new app.
+     * This method will create a new app and store it's root folder in the filesystem.
+     * The root folder will be later used to store the app's archive.
+     */
     public AppDto registerApp(AppDto appDto) {
         if (appRepository.findByName(appDto.getName()) != null) {
             throw new BadRequestException("App already exists.");
@@ -55,9 +60,19 @@ public class AppService {
         .build();
         appRepository.persist(app);
 
+        try {
+            Files.createDirectories(helpers.getPathOfApp(app.getId()));
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not create app folder.", e);
+        }
+
         return AppMapper.INSTANCE.appToAppDto(app);
     }
 
+    /*
+     * Upload an app archive in chunks (or full).
+     * This method will store the app archive in the filesystem.
+     */
     public void saveAppChunk(Long appId, String archive, String contentRange, byte[] bytes) {
         App app = appRepository.findById(appId);
         if (app == null) {
@@ -83,15 +98,14 @@ public class AppService {
             rangeLongValues[1] = (int) appSize - 1;
         }
 
-        Path appPath = helpers.getPathOfApp(archive);
+        Path appPath = helpers.getPathOfAppArchive(appId, archive);
         if (!Files.exists(appPath)) {
             try {
-                Files.createDirectories(appPath.getParent());
                 Files.createFile(appPath);
                 byte[] dummyBytes = new byte[(int) appSize];
                 Files.write(appPath, dummyBytes);
             } catch (IOException e) {
-                throw new InternalServerErrorException("Could not create app.", e);
+                throw new InternalServerErrorException("Could not create app archive.", e);
             }
             app.setArchive(archive);
             appRepository.update(app);
@@ -100,6 +114,10 @@ public class AppService {
         chunkManager.chunkedWriteBytesToFile(appPath, appSize, Base64.getDecoder().decode(bytes), rangeLongValues[0], rangeLongValues[1]);
     }
 
+    /*
+     * Get a chunk of the app archive.
+     * 
+     */
     public AppChunkDto getAppChunk(Long appId, String range) {
         App app = appRepository.findById(appId);
         if (app == null) {
@@ -120,7 +138,7 @@ public class AppService {
 
         byte[] bytes = new byte[(int) (rangeLongValues[1] - rangeLongValues[0] + 1)];
         try {
-            bytes = chunkManager.chunkedReadBytesFromFile(helpers.getPathOfApp(appMetadataDto.getArchive()).toUri().toURL(), rangeLongValues[0], rangeLongValues[1] + 1);
+            bytes = chunkManager.chunkedReadBytesFromFile(helpers.getPathOfAppArchive(appId, appMetadataDto.getArchive()).toUri().toURL(), rangeLongValues[0], rangeLongValues[1] + 1);
         } catch (MalformedURLException e) {
             throw new InternalServerErrorException("Malformed file URL.", e);
         }
@@ -141,8 +159,8 @@ public class AppService {
         if (app == null) {
             throw new BadRequestException("App does not exist.");
         }
-        /* Convert App to AppDto */
-        return AppDto.builder().build();
+        
+        return AppMapper.INSTANCE.appToAppDto(app);
     }
 
     public AppMetadataDto getAppMetadata(Long appId) {
@@ -150,8 +168,17 @@ public class AppService {
         if (app == null) {
             throw new BadRequestException("App does not exist.");
         }
-        /* Metadata that must be returned directly from the archive */
-        return AppMetadataDto.builder().build();
+
+        Path appPath = helpers.getPathOfAppArchive(appId, app.getArchive());
+        long appSize = helpers.getAppSize(appPath);
+        String hash = helpers.getAppHash(appPath);
+
+        return AppMetadataDto.builder()
+        .appId(appId)
+        .archive(app.getArchive())
+        .hash(hash)
+        .size(appSize)
+        .build();
     }
 
 }
