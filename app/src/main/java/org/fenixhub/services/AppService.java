@@ -70,6 +70,24 @@ public class AppService {
         return AppMapper.INSTANCE.appToAppDto(app);
     }
 
+    public void updateApp(Long appId, AppDto appDto) {
+        App app = appRepository.findById(appId);
+        if (app == null) {
+            throw new BadRequestException("App does not exist.");
+        }
+
+        if (appDto.getName() != null) {
+            app.setName(appDto.getName());
+        }
+        if (appDto.getPublished() != null) {
+            app.setPublished(appDto.getPublished());
+        }
+
+        app.setUpdatedAt(helpers.today.apply(0L));
+        
+        appRepository.update(app);
+    }
+
     /*
      * Upload an app archive in chunks (or full).
      * This method will store the app archive in the filesystem.

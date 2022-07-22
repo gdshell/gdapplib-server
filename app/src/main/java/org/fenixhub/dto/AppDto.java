@@ -24,10 +24,13 @@ public class AppDto {
     private String developer;
 
     @NotNull
-    private Long publishedAt;
+    private Long registeredAt;
 
     @NotNull
     private Long updatedAt;
+
+    @NotNull
+    private Boolean published;
 
     @NotNull
     private AppMetadataDto metadata;

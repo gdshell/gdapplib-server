@@ -84,8 +84,50 @@ public class AppResource {
         .build();
     }
 
+
     /*
-     * GET /app/{appId}
+     * PUT /app
+     * 
+     * Register a new app.
+     * 
+     * @param appDto The app to register.
+     */
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("")
+    public Response registerApp(
+        @NotNull AppDto appDto
+    ) {
+        AppDto app = appService.registerApp(appDto);
+        URI location;
+        try {
+            location = new URI("/app/"+app.getId().toString());
+        } catch (URISyntaxException e) {
+            throw new InternalServerErrorException("Could not create URI for app.", e);
+        }
+        return Response.ok(app).location(location).build();
+    }
+
+    /*
+     * PATCH /app/{appId}/info
+     * 
+     * Update the app info.
+     */
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{appId}/info")
+    public Response updateApp(
+        @PathParam("appId") Long appId,
+        @NotNull AppDto appDto
+    ) {
+        appService.updateApp(appId, appDto);
+        return Response.noContent().build();
+    }
+
+    /*
+     * GET /app/{appId}/archive
      * 
      * Download a chunk of the app in Base64 encoded format.
      * 
@@ -128,33 +170,10 @@ public class AppResource {
             .build();
     }
 
-    /*
-     * PUT /app
-     * 
-     * Register a new app.
-     * 
-     * @param appDto The app to register.
-     */
-    @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("")
-    public Response registerApp(
-        @NotNull AppDto appDto
-    ) {
-        AppDto app = appService.registerApp(appDto);
-        URI location;
-        try {
-            location = new URI("/app/"+app.getId().toString());
-        } catch (URISyntaxException e) {
-            throw new InternalServerErrorException("Could not create URI for app.", e);
-        }
-        return Response.ok(app).location(location).build();
-    }
 
 
     /*
-     * PATCH /app/{appId}
+     * PATCH /app/{appId}/archive
      * 
      * Upload a chunk of the archive related to an existing app.
      * 
@@ -167,7 +186,7 @@ public class AppResource {
     @PATCH
     @Consumes("message/byterange")
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{appId}")
+    @Path("/{appId}/archive")
     public Response uploadChunk(
         @PathParam("appId") Long appId,
         @HeaderParam("X-Archive") @NotBlank String archive,
