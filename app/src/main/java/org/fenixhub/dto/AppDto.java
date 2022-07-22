@@ -32,7 +32,4 @@ public class AppDto {
     @NotNull
     private Boolean published;
 
-    @NotNull
-    private AppMetadataDto metadata;
-
 }

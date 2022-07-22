@@ -9,12 +9,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.function.LongFunction;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+@ApplicationScoped
 public class Helpers {
     
 
