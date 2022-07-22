@@ -56,7 +56,8 @@ public class AppService {
         App app = App.builder()
         .name(appDto.getName())
         .developer(appDto.getDeveloper())
-        .publishedAt(helpers.today.apply(0L))
+        .registeredAt(helpers.today.apply(0L))
+        .published(false)
         .build();
         appRepository.persist(app);
 
@@ -159,7 +160,7 @@ public class AppService {
         if (app == null) {
             throw new BadRequestException("App does not exist.");
         }
-        
+
         return AppMapper.INSTANCE.appToAppDto(app);
     }
 

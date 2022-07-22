@@ -12,7 +12,8 @@ CREATE TABLE app_mgr.app (
 	"name" varchar NOT NULL,
 	developer varchar NOT NULL,
 	archive varchar NOT NULL,
-	published_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
+	created_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
 	updated_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
+	published boolean NOT NULL DEFAULT false,
     CONSTRAINT app_pkey PRIMARY KEY (id)
 );

@@ -29,10 +29,13 @@ public class App {
     @Column(name = "developer", nullable = false)
     private String developer;
 
-    @Column(name = "published_at", nullable = false)
-    private Long publishedAt;
+    @Column(name = "registered_at", nullable = false)
+    private Long registeredAt;
 
     @Column(name = "updated_at", nullable = false)
     private Long updatedAt;
+
+    @Column(name = "published", nullable = false)
+    private Boolean published;
 
 }
