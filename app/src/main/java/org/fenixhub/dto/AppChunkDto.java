@@ -10,6 +10,8 @@ public class AppChunkDto {
     private String appArchive;
     private byte[] data;
     private String hash;
-    private long[] chunkIndexes;
+    private long chunkIndex;
+    private long chunkSize;
+    private long chunksCount;
     private long appSize;
 }

@@ -1,8 +1,12 @@
 package org.fenixhub.repository;
 
+import java.math.BigInteger;
+import java.util.Map;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.fenixhub.entities.App;
 
@@ -16,8 +20,16 @@ public class AppRepository {
         return entityManager.find(App.class, id);
     }
 
+    public boolean checkIfExists(String whereQuery, Map<String, Object> whereValues) {
+        Query query = entityManager.createNativeQuery("SELECT COUNT(id) FROM app_mgr.app WHERE " + whereQuery);
+        whereValues.forEach((key, value) -> query.setParameter(key, value));
+        return !query.getSingleResult().equals(BigInteger.ZERO);
+    }
+
     public App findByName(String name) {
-        return entityManager.createNamedQuery("App.findByName", App.class).setParameter("name", name).getSingleResult();
+        return (App) entityManager.createNativeQuery("SELECT * FROM app WHERE name = :name", App.class)
+        .setParameter("name", name)
+        .getSingleResult();
     }
 
     public App findByArchive(String archive) {
