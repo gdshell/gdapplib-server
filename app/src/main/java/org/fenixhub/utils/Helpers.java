@@ -9,13 +9,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.UUID;
-import java.util.function.LongFunction;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
 
 @ApplicationScoped
 public class Helpers {
@@ -27,33 +29,56 @@ public class Helpers {
         return Path.of(System.getProperty("user.home") + "/" + configuration.getRootFolder());
     }
 
-    public Path getPathOfApp(Long appId) {
-        return getAppRootFolder().resolve(appId.toString());
+    public Path getPathOfApp(Integer appId) {
+        Path path = getAppRootFolder().resolve(appId.toString());
+        if (!Files.exists(path)) {
+            throw new InternalServerErrorException("App folder does not exist.");
+        }
+        return path;
     }
 
-    public Path getPathOfAppArchive(Long appId, String archiveId) {
-        return getPathOfApp(appId).resolve(archiveId);
+    public Path getPathOfAppArchive(Integer appId, String archiveId) {
+        Path path = getPathOfApp(appId).resolve(archiveId);
+        if (!Files.exists(getAppRootFolder())) {
+            throw new InternalServerErrorException("App archive folder does not exist.");
+        }
+        return path;
     }
 
-    public Path getPathOfChunk(Long appId, String archiveId, int chunkIndex) {
-        return getPathOfAppArchive(appId, archiveId).resolve(Integer.toString(chunkIndex));
+    public Path getPathOfChunkByIndex(Integer appId, String archiveId, Integer index) {
+        Supplier<Stream<Path>> streamPaths = () -> {
+            try {
+                return Files.find(
+                    getPathOfAppArchive(appId, archiveId), 
+                    1, 
+                    (p, basicFileAttributes) ->
+                    p.getFileName().toString().startsWith(index.toString() + configuration.getArchiveChunkDelimiter())
+                );
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Error while searching for chunks.");
+            }
+        };
+        if (streamPaths.get().count() == 0) {
+            throw new InternalServerErrorException("Archive chunk does not exist.");
+        }
+        Path path = streamPaths.get().findFirst().get();
+        streamPaths.get().close();
+        return path;
     }
 
-    public Path getPathOfChunkHash(Long appId, String archiveId, int chunkIndex) {
-        return getPathOfAppArchive(appId, archiveId).resolve(Integer.toString(chunkIndex) + ".sha256");
-    }
-
-    public String getHashOfAppChunk(Long appId, String archiveId, int chunkIndex) {
-        return getHashOfFile(getPathOfChunk(appId, archiveId, chunkIndex));
+    public Path getPathOfChunk(Integer appId, String archiveId, int chunkIndex, String chunkHash) {
+        Path path = getPathOfAppArchive(appId, archiveId).resolve(Integer.toString(chunkIndex) + configuration.getArchiveChunkDelimiter() + chunkHash);
+        if (!Files.exists(path)) {
+            throw new InternalServerErrorException("Archive chunk does not exist.");
+        }
+        return path;
     }
     
-    public String getHashOfAppChunk(Path appChunkPath) {
-        // if (!Files.exists(appChunkPath)) {
-        //     throw new InternalServerErrorException("App chunk does not exist.");
-        // }
-        return getHashOfFile(appChunkPath);
+    public SimpleEntry<Integer, String> getChunkNameSplit(Path chunkPath) {
+        String[] split = chunkPath.getFileName().toString().split(configuration.getArchiveChunkDelimiter());
+        return new SimpleEntry(Integer.parseInt(split[0]), split[1]);
     }
-    
+
     public String getHashOfBytes(byte[] bytes) {
         byte[] digest = null;
         try {
@@ -64,13 +89,13 @@ public class Helpers {
         return new String(Base64.getEncoder().encode(digest), StandardCharsets.UTF_8);
     }
 
-    public long getAppSize(Path appArchivePath) {
-        long size = -1;
-        if (!Files.exists(appArchivePath)) {
+    public Long getArchiveSize(Path archivePath) {
+        Long size = -1L;
+        if (!Files.exists(archivePath)) {
             throw new NotFoundException("App does not exist.");
         }
         try {
-            size = Files.size(appArchivePath);
+            size = Files.size(archivePath);
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not read size of app.", e);
         }
@@ -88,41 +113,11 @@ public class Helpers {
         return hash;
     }
 
-    public long[] getRangeLongValues(String range) {
-        long[] rangeLongValues = new long[2];
-        String[] rangeArray = range.split("=");
-        if (!configuration.getRangeUnits().equals(rangeArray[0])) {
-            throw new WebApplicationException("Server unable to handle " + rangeArray[0] + " range units.", 416);
-        }
-        String[] rangeValues = rangeArray[1].split("-");
-        rangeLongValues[0] = Long.parseLong(rangeValues[0]);
-        rangeLongValues[1] = Long.parseLong(rangeValues[1]);
-        return rangeLongValues;
-    }
-
-    public long[] getContentRangeLongValues(String range) {
-        long[] contentRangeLongValues = new long[3];
-        String[] rangeArray = range.split(" ");
-        if (!configuration.getRangeUnits().equals(rangeArray[0])) {
-            throw new WebApplicationException("Server unable to handle " + rangeArray[0] + " range units.", 416);
-        }
-        String[] contentRange = rangeArray[1].split("/");
-        String[] rangeValues = contentRange[0].split("-");
-        contentRangeLongValues[0] = Long.parseLong(rangeValues[0]);
-        contentRangeLongValues[1] = Long.parseLong(rangeValues[1]);
-        contentRangeLongValues[2] = Long.parseLong(contentRange[1]);
-        return contentRangeLongValues;
-    }
-
-
-    public LongFunction<Long> today = (offset) -> (System.currentTimeMillis() + offset) / 1000L ;
+    public IntFunction<Integer> today = (offset) -> (int) ((System.currentTimeMillis() + offset) / 1000) ;
 
 
     public String generateUUID() {
         return UUID.randomUUID().toString();
     }
-
-
-
     
 }

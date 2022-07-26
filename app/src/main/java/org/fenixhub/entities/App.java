@@ -23,7 +23,7 @@ public class App {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -32,10 +32,10 @@ public class App {
     private String developer;
 
     @Column(name = "registered_at", nullable = false)
-    private Long registeredAt;
+    private Integer registeredAt;
 
     @Column(name = "updated_at", nullable = false)
-    private Long updatedAt;
+    private Integer updatedAt;
 
     @Column(name = "published", nullable = false)
     private Boolean published;

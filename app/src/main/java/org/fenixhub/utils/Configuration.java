@@ -24,4 +24,9 @@ public class Configuration {
 
     @ConfigProperty(name = "app.compression.type", defaultValue = "br")
     private String compressionType;
+    
+    @ConfigProperty(name = "app.archive.chunk.delimiter", defaultValue = "_")
+    private String archiveChunkDelimiter;
+
+
 }

@@ -43,7 +43,7 @@ services:
 
 networks:
   gdapplib-server:
-    # name: gdapplib-server
+    name: gdapplib-server
     driver: bridge
 
 volumes:

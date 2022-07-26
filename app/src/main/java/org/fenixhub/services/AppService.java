@@ -31,8 +31,17 @@ public class AppService {
 
 
     @Transactional
-    public boolean checkIfAppExists(Long appId) {
+    public boolean checkIfAppExists(Integer appId) {
         return appRepository.checkIfExists("id = :id", Map.of("id", appId));
+    }
+
+    @Transactional
+    public AppDto getApp(Integer appId) {
+        if (!checkIfAppExists(appId)) {
+            throw new NotFoundException("App not found.");
+        }
+        
+        return AppMapper.INSTANCE.appToAppDto(appRepository.findById(appId));
     }
 
     /*
@@ -49,8 +58,8 @@ public class AppService {
         App app = App.builder()
         .name(appDto.getName())
         .developer(appDto.getDeveloper())
-        .registeredAt(helpers.today.apply(0L))
-        .updatedAt(helpers.today.apply(0L))
+        .registeredAt(helpers.today.apply(0))
+        .updatedAt(helpers.today.apply(0))
         .published(false)
         .build();
         appRepository.persist(app);
@@ -64,7 +73,8 @@ public class AppService {
         return AppMapper.INSTANCE.appToAppDto(app);
     }
 
-    public void updateApp(Long appId, AppDto appDto) {
+
+    public void updateApp(Integer appId, AppDto appDto) {
         App app = appRepository.findById(appId);
         if (app == null) {
             throw new NotFoundException("App does not exist.");
@@ -77,7 +87,7 @@ public class AppService {
             app.setPublished(appDto.getPublished());
         }
 
-        app.setUpdatedAt(helpers.today.apply(0L));
+        app.setUpdatedAt(helpers.today.apply(0));
         
         appRepository.update(app);
     }

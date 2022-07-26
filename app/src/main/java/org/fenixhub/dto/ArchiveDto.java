@@ -22,7 +22,7 @@ public class ArchiveDto {
     private UUID id;
 
     @NotNull
-    private Long appId;
+    private Integer appId;
     
     @NotBlank
     private String archive;
@@ -34,9 +34,12 @@ public class ArchiveDto {
     private Long size;
 
     @NotNull
-    private Long chunks;
+    private Short chunks;
 
     @NotNull
     private String version;
+
+    @NotNull
+    private Boolean completed;
     
 }

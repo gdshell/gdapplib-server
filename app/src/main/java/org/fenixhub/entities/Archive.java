@@ -2,12 +2,8 @@ package org.fenixhub.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +24,7 @@ public class Archive {
     private String id;
 
     @Column(name = "app_id", nullable = false)
-    private Long appId;
+    private Integer appId;
     
     @Column(name = "archive", nullable = true)
     private String archive;
@@ -40,15 +36,18 @@ public class Archive {
     private Long size;
 
     @Column(name = "chunks", nullable = false)
-    private Long chunks;
+    private Short chunks;
 
     @Column(name = "version", nullable = false)
     private String version;
 
     @Column(name = "created_at", nullable = false)
-    private Long createdAt;
+    private Integer createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private Long updatedAt;
+    private Integer updatedAt;
+
+    @Column(name = "completed", nullable = false)
+    private Boolean completed;
 
 }

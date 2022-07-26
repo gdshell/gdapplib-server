@@ -30,11 +30,12 @@ CREATE TABLE app_mgr.archive (
 	app_id int4 NOT NULL,
 	"version" varchar NOT NULL,
 	archive varchar NOT NULL,
-	"size" int4 NOT NULL,
+	"size" int8 NOT NULL,
 	hash varchar NOT NULL,
-	chunks int4 NOT NULL,
+	chunks int2 NOT NULL,
 	created_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
 	updated_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
+	completed boolean NOT NULL DEFAULT false,
 	CONSTRAINT archive_pk PRIMARY KEY (id)
 );
 

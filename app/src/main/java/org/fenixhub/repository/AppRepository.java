@@ -16,7 +16,7 @@ public class AppRepository {
     @Inject
     private EntityManager entityManager;
 
-    public App findById(Long id) {
+    public App findById(Integer id) {
         return entityManager.find(App.class, id);
     }
 

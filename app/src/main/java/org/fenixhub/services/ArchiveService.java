@@ -3,6 +3,8 @@ package org.fenixhub.services;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +17,9 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 
+import org.fenixhub.dto.AppChunkDto;
 import org.fenixhub.dto.ArchiveDto;
+import org.fenixhub.dto.ChunkMetadataDto;
 import org.fenixhub.entities.Archive;
 import org.fenixhub.mapper.ArchiveMapper;
 import org.fenixhub.repository.ArchiveRepository;
@@ -41,12 +45,14 @@ public class ArchiveService {
     @Inject
     private ChunkManager chunkManager;
 
-    public List<ArchiveDto> getArchivesByAppId(Long appId) {
+    public List<ArchiveDto> getArchives(Integer appId) {
         if (!appService.checkIfAppExists(appId)) {
             throw new NotFoundException("App not found.");
         }
         
-        return archiveRepository.findByAppId(appId).stream().map(ArchiveMapper.INSTANCE::archiveToArchiveDto).collect(Collectors.toList());
+        return archiveRepository.findByParams(Map.of("appId", appId))
+        .stream().map(ArchiveMapper.INSTANCE::archiveToArchiveDto)
+        .collect(Collectors.toList());
     }
     
     @Transactional
@@ -74,11 +80,76 @@ public class ArchiveService {
 
         Archive archive = ArchiveMapper.INSTANCE.archiveDtoToArchive(archiveDto);
         archive.setId(archiveId);
-        archive.setCreatedAt(helpers.today.apply(0L));
-        archive.setUpdatedAt(helpers.today.apply(0L));
+        archive.setCreatedAt(helpers.today.apply(0));
+        archive.setUpdatedAt(helpers.today.apply(0));
         archiveRepository.update(archive);
 
         return ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
+    }
+
+    @Transactional
+    public AppChunkDto getArchiveChunk(String archiveId, int chunkIndex) {
+        Archive archive = archiveRepository.findById(archiveId);
+        if (archive == null) {
+            throw new NotFoundException("Archive not found.");
+        }
+
+        ArchiveDto archiveDto = ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
+        
+        Path chunkPath = helpers.getPathOfChunkByIndex(archiveDto.getAppId(), archiveId, chunkIndex);
+        byte[] chunkBytes;
+        try {
+            chunkBytes = Files.readAllBytes(chunkPath);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not copy chunk.", e);
+        }
+        SimpleEntry<Integer, String> chunkMeta = helpers.getChunkNameSplit(chunkPath);
+        
+        return AppChunkDto.appChunkDtoBuilder()
+        .appId(archiveDto.getAppId())
+        .appArchive(archiveDto.getArchive())
+        .appSize(archiveDto.getSize())
+        .chunksCount(archiveDto.getChunks())
+        .chunkIndex(chunkMeta.getKey())
+        .chunkSize(chunkBytes.length)
+        .data(Base64.getEncoder().encode(chunkBytes))
+        .encoding(configuration.getCompressionType())
+        .hash(chunkMeta.getValue())
+        .build();
+    }
+
+    @Transactional
+    public List<ChunkMetadataDto> getArchiveChunks(String archiveId) {
+        Archive archive = archiveRepository.findById(archiveId);
+        if (archive == null) {
+            throw new NotFoundException("Archive not found.");
+        }
+        
+        List<ChunkMetadataDto> chunks = new ArrayList<ChunkMetadataDto>();
+
+        ArchiveDto archiveDto = ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
+        try {
+            Files.list(helpers.getPathOfAppArchive(archiveDto.getAppId(), archiveDto.getId().toString())).forEach(chunkPath -> {
+                try {
+                    byte[] chunkBytes = Files.readAllBytes(chunkPath);
+                    SimpleEntry<Integer, String> chunkMeta = helpers.getChunkNameSplit(chunkPath);
+                    chunks.add(
+                        ChunkMetadataDto.builder()
+                        .chunkIndex(chunkMeta.getKey())
+                        .chunkSize(chunkBytes.length)
+                        .encoding(configuration.getCompressionType())
+                        .hash(chunkMeta.getValue())
+                        .build()
+                    );
+                } catch (IOException e) {
+                    throw new InternalServerErrorException("Could not copy chunks.", e);
+                }
+            });
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not copy chunks.", e);
+        }
+
+        return chunks;
     }
 
     /*
@@ -86,7 +157,7 @@ public class ArchiveService {
      * This method will store the app archive in the filesystem.
      */
     @Transactional
-    public void saveAppChunk(String archiveId, int chunkSize, int chunkIndex, String chunkHash, boolean checkIntegrity, byte[] bytes) {
+    public void saveAppChunk(String archiveId, int chunkSize, int chunkIndex, String chunkHash, boolean checkIntegrity, byte[] base64bytes) {
         Archive archive = archiveRepository.findById(archiveId);
         if (archive == null) {
             throw new NotFoundException("Archive not found.");
@@ -100,7 +171,7 @@ public class ArchiveService {
         
         byte[] decodedBytes = null;
         try {
-            decodedBytes = Base64.getDecoder().decode(bytes);
+            decodedBytes = Base64.getDecoder().decode(base64bytes);
         } catch(IllegalArgumentException e) {
             throw new BadRequestException("Could not save app chunk. Base64 decoding failed.");
         }
@@ -114,14 +185,12 @@ public class ArchiveService {
             throw new BadRequestException("Could not save app chunk. Hash does not match.");
         }
 
-        Path chunkPath = helpers.getPathOfChunk(archiveDto.getAppId(), archiveId, chunkIndex);
-        Path chunkHashPath = helpers.getPathOfChunkHash(archiveDto.getAppId(), archiveId, chunkIndex);
+        Path chunkPath = helpers.getPathOfChunk(archiveDto.getAppId(), archiveId, chunkIndex, chunkHash);
         if (
             (Files.exists(chunkPath) && !chunkManager.readChunkHashFromFile(helpers.getPathOfAppArchive(archiveDto.getAppId(), archiveId), chunkIndex).equals(chunkHash)) ||
             (!Files.exists(chunkPath))
         ) {
             chunkManager.writeChunkToFile(chunkPath, decodedBytes);
-            chunkManager.writeChunkToFile(chunkHashPath, chunkHash.getBytes());
         }
 
         // Check integrity of block
@@ -129,9 +198,20 @@ public class ArchiveService {
             if (!chunkManager.getBlockHash(helpers.getPathOfAppArchive(archiveDto.getAppId(), archiveId), chunkSize).equals(archiveDto.getHash())) {
                 throw new BadRequestException("Could not save app chunk. Block hash does not match.");
             }
+            archiveRepository.setCompleted(archive, true);
         }
 
     }
+
+
+    /*
+     * 
+     */
+    @Transactional
+    public void saveAppChunk(String archiveId, int chunkSize, int chunkIndex, String chunkHash, boolean checkIntegrity, String base64data) {
+        saveAppChunk(archiveId, chunkSize, chunkIndex, chunkHash, checkIntegrity, base64data.getBytes());
+    }
+
 
     // /*
     //  * Get a chunk of the app archive.

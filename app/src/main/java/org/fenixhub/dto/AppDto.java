@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class AppDto {
     
     @NotNull
-    private Long id;
+    private Integer id;
     
     @NotBlank
     private String name;
@@ -24,10 +24,10 @@ public class AppDto {
     private String developer;
 
     @NotNull
-    private Long registeredAt;
+    private Integer registeredAt;
 
     @NotNull
-    private Long updatedAt;
+    private Integer updatedAt;
 
     @NotNull
     private Boolean published;
