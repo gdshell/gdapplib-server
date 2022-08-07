@@ -3,6 +3,7 @@ package org.fenixhub.resources;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -60,6 +61,7 @@ public class AppResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("")
+    @RolesAllowed("DEVELOPER")
     public Response registerApp(
         @NotNull AppDto appDto
     ) {
@@ -82,6 +84,7 @@ public class AppResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{appId}")
+    @RolesAllowed("DEVELOPER")
     public Response updateApp(
         @PathParam("appId") Integer appId,
         @NotNull AppDto appDto

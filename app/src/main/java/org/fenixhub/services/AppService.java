@@ -11,12 +11,15 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 
+import org.eclipse.microprofile.jwt.Claims;
 import org.fenixhub.dto.AppDto;
 import org.fenixhub.entities.App;
 import org.fenixhub.mapper.AppMapper;
 import org.fenixhub.repository.AppRepository;
 import org.fenixhub.utils.Helpers;
 import org.jboss.logging.Logger;
+
+import io.quarkus.security.UnauthorizedException;
 
 @ApplicationScoped
 public class AppService {
@@ -29,6 +32,8 @@ public class AppService {
     @Inject
     private AppRepository appRepository;
 
+    @Inject
+    private JWTService jwtService;
 
     @Transactional
     public boolean checkIfAppExists(Integer appId) {
@@ -57,7 +62,7 @@ public class AppService {
 
         App app = App.builder()
         .name(appDto.getName())
-        .developer(appDto.getDeveloper())
+        .developer(jwtService.getClaim(Claims.sub))
         .registeredAt(helpers.today.apply(0))
         .updatedAt(helpers.today.apply(0))
         .published(false)
@@ -73,13 +78,17 @@ public class AppService {
         return AppMapper.INSTANCE.appToAppDto(app);
     }
 
-
+    @Transactional
     public void updateApp(Integer appId, AppDto appDto) {
         App app = appRepository.findById(appId);
         if (app == null) {
             throw new NotFoundException("App does not exist.");
         }
 
+        if (!jwtService.verifyClaim(Claims.sub, app.getDeveloper())) {
+            throw new UnauthorizedException("You are not the developer of this app.");
+        }
+        
         if (appDto.getName() != null) {
             app.setName(appDto.getName());
         }

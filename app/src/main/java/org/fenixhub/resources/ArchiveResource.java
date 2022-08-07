@@ -2,6 +2,7 @@ package org.fenixhub.resources;
 
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -46,6 +47,7 @@ public class ArchiveResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/initialize")
+    @RolesAllowed("DEVELOPER")
     public Response initializeAppArchive(
         ArchiveDto archiveDto
     ) {
@@ -68,6 +70,7 @@ public class ArchiveResource {
     @Consumes("text/plain")
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{archiveId}/chunks")
+    @RolesAllowed("DEVELOPER")
     public Response uploadChunk(
         @PathParam("archiveId") String archiveId,
         @HeaderParam("X-Chunk-Size") @NotNull @Min(value = 1) Integer chunkSize,
@@ -95,6 +98,7 @@ public class ArchiveResource {
     @Consumes("message/byterange")
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{archiveId}/chunks")
+    @RolesAllowed("DEVELOPER")
     public Response uploadChunk(
         @PathParam("archiveId") String archiveId,
         @HeaderParam("X-Chunk-Size") @NotNull @Min(value = 1) Integer chunkSize,
@@ -111,10 +115,9 @@ public class ArchiveResource {
     /*
      * GET /archives/{archiveId}/chunks/{chunkIndex}
      * 
-     * Download a chunk of the app in Base64 encoded format.
+     * Get information about an archive's chunks.
      * 
      * @param archiveId The id of the archive
-     * @param chunkIndex The index of the chunk to download
      * 
      * @return The app chunk
      */
@@ -142,7 +145,7 @@ public class ArchiveResource {
      */
     @GET
     @CacheResult(cacheName = "app-download-chunk")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
     @Produces("application/x-tar")
     @Path("/{archiveId}/chunks/{chunkIndex}")
     public Response downloadChunk(

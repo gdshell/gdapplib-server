@@ -28,5 +28,9 @@ public class Configuration {
     @ConfigProperty(name = "app.archive.chunk.delimiter", defaultValue = "_")
     private String archiveChunkDelimiter;
 
+	@ConfigProperty(name = "mp.jwt.verify.issuer")
+	private String issuer;
 
+	@ConfigProperty(name = "jwt.expiration")
+	private int expirationTimeJwt;
 }

@@ -68,9 +68,9 @@ public class Helpers {
 
     public Path getPathOfChunk(Integer appId, String archiveId, int chunkIndex, String chunkHash) {
         Path path = getPathOfAppArchive(appId, archiveId).resolve(Integer.toString(chunkIndex) + configuration.getArchiveChunkDelimiter() + chunkHash);
-        if (!Files.exists(path)) {
-            throw new InternalServerErrorException("Archive chunk does not exist.");
-        }
+        // if (!Files.exists(path)) {
+        //     throw new InternalServerErrorException("Archive chunk does not exist.");
+        // }
         return path;
     }
     
@@ -86,7 +86,7 @@ public class Helpers {
         } catch (NoSuchAlgorithmException e) {
             throw new InternalServerErrorException("Could not calculate HASH of bytes.", e);
         }
-        return new String(Base64.getEncoder().encode(digest), StandardCharsets.UTF_8);
+        return new String(Base64.getUrlEncoder().encode(digest), StandardCharsets.UTF_8);
     }
 
     public Long getArchiveSize(Path archivePath) {

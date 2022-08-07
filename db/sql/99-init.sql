@@ -39,6 +39,22 @@ CREATE TABLE app_mgr.archive (
 	CONSTRAINT archive_pk PRIMARY KEY (id)
 );
 
+-- app_mgr.user definition
+
+-- Drop table
+
+-- DROP TABLE app_mgr.user;
+
+CREATE TABLE app_mgr.user (
+	id varchar NOT NULL,
+	username varchar NOT NULL,
+	email varchar NOT NULL,
+	"password" varchar NOT NULL,
+	registered_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
+	email_verified boolean NOT NULL DEFAULT false,
+	CONSTRAINT user_pkey PRIMARY KEY (id)
+);
+
 -- app_mgr.archive foreign keys
 
 ALTER TABLE app_mgr.archive ADD CONSTRAINT archive_fk FOREIGN KEY (app_id) REFERENCES app_mgr.app(id) ON DELETE CASCADE;

@@ -82,6 +82,7 @@ public class ArchiveService {
         archive.setId(archiveId);
         archive.setCreatedAt(helpers.today.apply(0));
         archive.setUpdatedAt(helpers.today.apply(0));
+        archive.setCompleted(false);
         archiveRepository.update(archive);
 
         return ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
@@ -180,7 +181,6 @@ public class ArchiveService {
             throw new BadRequestException("Could not save app chunk. Declared length and actual length do not match.");
         }
         
-
         if (!helpers.getHashOfBytes(decodedBytes).equals(chunkHash)) {
             throw new BadRequestException("Could not save app chunk. Hash does not match.");
         }
