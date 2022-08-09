@@ -11,14 +11,17 @@ import org.fenixhub.entities.User;
 @ApplicationScoped
 public class UserRepository {
     
-    @Inject
-    private EntityManager entityManager;
+    @Inject EntityManager entityManager;
 
     public void persist(User user) {
         entityManager.persist(user);
     }
 
-    public User findById(Integer id) {
+    public void update(User user) {
+        entityManager.merge(user);
+    }
+
+    public User findById(String id) {
         return entityManager.find(User.class, id);
     }
 
@@ -35,6 +38,17 @@ public class UserRepository {
         List<User> rUsers = entityManager.createNativeQuery("SELECT * FROM app_mgr.user WHERE username = :username", User.class).setParameter("username", username).getResultList();
         if (rUsers.size() > 0) {
             return rUsers.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public List<UserRoleRepository> findRoleForId(String userId) {
+        List<UserRoleRepository> rUsers = entityManager.createNativeQuery("SELECT * FROM app_mgr.user_role WHERE user_id = :userId", UserRoleRepository.class)
+        .setParameter("userId", userId)
+        .getResultList();
+        if (rUsers.size() > 0) {
+            return rUsers;
         } else {
             return null;
         }

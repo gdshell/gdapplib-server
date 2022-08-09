@@ -4,10 +4,12 @@ import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.groups.ConvertGroup;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -23,6 +25,7 @@ import javax.ws.rs.core.Response;
 import org.fenixhub.dto.AppChunkDto;
 import org.fenixhub.dto.ArchiveDto;
 import org.fenixhub.dto.ChunkMetadataDto;
+import org.fenixhub.dto.views.ArchiveView;
 import org.fenixhub.services.ArchiveService;
 
 import io.quarkus.cache.CacheResult;
@@ -30,8 +33,7 @@ import io.quarkus.cache.CacheResult;
 @Path("/archives")
 public class ArchiveResource {
     
-    @Inject
-    private ArchiveService archiveService;
+    @Inject ArchiveService archiveService;
 
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
@@ -47,9 +49,9 @@ public class ArchiveResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/initialize")
-    @RolesAllowed("DEVELOPER")
+    @RolesAllowed({ "DEVELOPER" })
     public Response initializeAppArchive(
-        ArchiveDto archiveDto
+        @Valid @ConvertGroup(to = ArchiveView.Initialize.class) ArchiveDto archiveDto
     ) {
         ArchiveDto uArchiveDto = archiveService.initializeAppArchive(archiveDto);
         return Response.ok(uArchiveDto).build();

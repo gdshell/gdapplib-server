@@ -1,35 +1,54 @@
 package org.fenixhub.services;
 
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 
+import org.eclipse.microprofile.jwt.Claims;
 import org.fenixhub.dto.TokenDto;
 import org.fenixhub.dto.UserDto;
+import org.fenixhub.entities.RefreshToken;
 import org.fenixhub.entities.User;
+import org.fenixhub.entities.UserRole;
 import org.fenixhub.mapper.UserMapper;
+import org.fenixhub.repository.RefreshTokenRepository;
+import org.fenixhub.repository.RoleRepository;
 import org.fenixhub.repository.UserRepository;
+import org.fenixhub.repository.UserRoleRepository;
 import org.fenixhub.utils.Configuration;
 import org.fenixhub.utils.Helpers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 
 @ApplicationScoped
 public class AuthenticationService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationService.class);
     
-    @Inject
-    private JWTService jwtService;
+    @Inject JWTService jwtService;
 
-    @Inject
-    private UserRepository userRepository;
+    @Inject RoleRepository roleRepository;
 
-    @Inject
-    private Configuration configuration;
+    @Inject UserRepository userRepository;
+    
+    @Inject UserRoleRepository userRoleRepository;
 
-    @Inject
-    private Helpers helpers;
+    @Inject RefreshTokenRepository refreshTokenRepository;
+
+    @Inject Configuration configuration;
+
+    @Inject Helpers helpers;
+
+    @Inject UserMapper userMapper;
+
 
     @Transactional
     public String register(UserDto userDto) {
@@ -50,7 +69,43 @@ public class AuthenticationService {
         .build();
         userRepository.persist(user);
 
+        UserRole userRole = UserRole.builder()
+        .userId(user.getId())
+        .roleId(roleRepository.getRoleByName("DEVELOPER").getId())
+        .build();
+        userRoleRepository.persist(userRole);
+
+        user.setRoles(Set.of(userRole));
+        userRepository.update(user);
+
+
         return user.getId();
+    }
+
+    @Transactional
+    public TokenDto createSession(UserDto userDto) {
+
+        RefreshToken refreshToken = refreshTokenRepository.getRefreshTokenForUser(userDto.getId())
+        .or(() -> {
+            RefreshToken newRefreshToken = RefreshToken.builder()
+            .userId(userDto.getId())
+            .token(jwtService.generateRefreshToken())
+            .build();
+            refreshTokenRepository.persist(newRefreshToken);
+            return Optional.of(newRefreshToken);
+        }).get();
+
+        return TokenDto.builder()
+        .tokenType("bearer")
+        .idToken(
+            jwtService.generateJWT(
+                userDto.getId(), userDto.getEmail(), userDto.getEmailVerified(), 
+                userDto.getRoles().stream().map(role -> roleRepository.getRoleById(role.getRoleId()).getName()).collect(Collectors.toSet())
+            )
+        )
+        .expiresIn(configuration.getExpirationTimeJwt())
+        .refreshToken(refreshToken.getToken())
+        .build();
     }
 
     @Transactional
@@ -60,14 +115,22 @@ public class AuthenticationService {
             throw new NotFoundException("Invalid credentials.");
         }
 
-        UserDto loggedUser = UserMapper.INSTANCE.userToUserDto(user);
-        
-        return TokenDto.builder()
-        .tokenType("bearer")
-        .idToken(jwtService.generateJWT(loggedUser.getId(), loggedUser.getEmail(), loggedUser.getEmailVerified(),new String[] { "DEVELOPER" }))
-        .expiresIn(configuration.getExpirationTimeJwt())
-        .refreshToken(jwtService.generateRefreshToken())
-        .build();
+        UserDto loggedUser = userMapper.userToUserDto(user);
+
+        return createSession(loggedUser);
+    }
+
+    @Transactional
+    public TokenDto refreshToken(TokenDto oldToken) {
+        RefreshToken refreshToken = refreshTokenRepository.find(oldToken.getRefreshToken(), jwtService.getClaim(Claims.sub));
+        if (refreshToken == null) {
+            throw new NotFoundException("Invalid refresh token.");
+        }
+
+        UserDto userDto = userMapper.userToUserDto(userRepository.findById(refreshToken.getUserId()));
+        refreshTokenRepository.delete(refreshToken);
+
+        return createSession(userDto);
     }
 
 }

@@ -4,12 +4,14 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import io.quarkus.runtime.Startup;
 import lombok.Getter;
 
 @Getter
+@Startup
 @ApplicationScoped
 public class Configuration {
-    
+
     @ConfigProperty(name = "app.range.units", defaultValue = "bytes")
     private String rangeUnits;
 
@@ -33,4 +35,5 @@ public class Configuration {
 
 	@ConfigProperty(name = "jwt.expiration")
 	private int expirationTimeJwt;
+    
 }

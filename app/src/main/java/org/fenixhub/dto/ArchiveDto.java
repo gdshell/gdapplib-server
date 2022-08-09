@@ -4,39 +4,41 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
-import io.smallrye.common.constraint.NotNull;
+import org.fenixhub.dto.views.ArchiveView;
+
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-// TODO: add profiles in order to validate request/responses
-
 @Data
 @Builder
 @AllArgsConstructor
+@RegisterForReflection
 public class ArchiveDto {
     
 
     @NotNull
     private UUID id;
 
-    @NotNull
+    @NotNull(groups = {ArchiveView.Initialize.class})
     private Integer appId;
     
-    @NotBlank
+    @NotBlank(groups = {ArchiveView.Initialize.class})
     private String archive;
 
-    @NotEmpty
+    @NotEmpty(groups = {ArchiveView.Initialize.class})
     private String hash;
     
-    @NotNull
+    @NotNull(groups = {ArchiveView.Initialize.class})
     private Long size;
 
-    @NotNull
+    @NotNull(groups = {ArchiveView.Initialize.class})
     private Short chunks;
 
-    @NotNull
+    @NotNull(groups = {ArchiveView.Initialize.class})
     private String version;
 
     @NotNull

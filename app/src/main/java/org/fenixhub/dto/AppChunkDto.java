@@ -1,11 +1,13 @@
 package org.fenixhub.dto;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
+@RegisterForReflection
 public class AppChunkDto extends ChunkMetadataDto {
     private int appId;
     private String appArchive;

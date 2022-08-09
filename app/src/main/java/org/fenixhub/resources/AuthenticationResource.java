@@ -13,15 +13,18 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.fenixhub.dto.TokenDto;
 import org.fenixhub.dto.UserDto;
+import org.fenixhub.dto.views.TokenView;
 import org.fenixhub.dto.views.UserView;
 import org.fenixhub.services.AuthenticationService;
+
+import io.quarkus.security.Authenticated;
 
 @Path("/auth")
 public class AuthenticationResource {
     
-    @Inject
-    private AuthenticationService authenticationService;
+    @Inject AuthenticationService authenticationService;
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -51,11 +54,15 @@ public class AuthenticationResource {
         return Response.ok().build();
     }
     
+    @POST
     @Path("/refresh")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response refresh() {
-        return Response.ok().build();
+    @Authenticated
+    public Response refresh(
+        @Valid @ConvertGroup(to = TokenView.Refresh.class) TokenDto tokenDto
+    ) {
+        return Response.ok(authenticationService.refreshToken(tokenDto)).build();
     }
 
 }

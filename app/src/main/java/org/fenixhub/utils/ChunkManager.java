@@ -15,8 +15,7 @@ import javax.ws.rs.InternalServerErrorException;
 @ApplicationScoped
 public class ChunkManager {
 
-    @Inject
-    private Helpers helpers;
+    @Inject Helpers helpers;
     
     public byte[] chunkedReadBytesFromFile(URL appPath, long start, long end) {
         byte[] bytes = new byte[(int) (end - start)];

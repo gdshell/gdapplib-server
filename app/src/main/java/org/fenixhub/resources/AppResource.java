@@ -25,8 +25,7 @@ import io.quarkus.cache.CacheResult;
 @Path("/apps")
 public class AppResource {
 
-    @Inject
-    private AppService appService;
+    @Inject AppService appService;
 
     /*
      * GET /apps/{appId}/info

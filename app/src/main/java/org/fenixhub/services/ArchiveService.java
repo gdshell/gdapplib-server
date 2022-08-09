@@ -30,20 +30,17 @@ import org.fenixhub.utils.Helpers;
 @ApplicationScoped
 public class ArchiveService {
     
-    @Inject
-    private Configuration configuration;
+    @Inject Configuration configuration;
     
-    @Inject
-    private Helpers helpers;
+    @Inject Helpers helpers;
 
-    @Inject
-    private ArchiveRepository archiveRepository;
+    @Inject ArchiveRepository archiveRepository;
 
-    @Inject
-    private AppService appService;
+    @Inject AppService appService;
 
-    @Inject
-    private ChunkManager chunkManager;
+    @Inject ChunkManager chunkManager;
+
+    @Inject ArchiveMapper archiveMapper;
 
     public List<ArchiveDto> getArchives(Integer appId) {
         if (!appService.checkIfAppExists(appId)) {
@@ -51,7 +48,7 @@ public class ArchiveService {
         }
         
         return archiveRepository.findByParams(Map.of("appId", appId))
-        .stream().map(ArchiveMapper.INSTANCE::archiveToArchiveDto)
+        .stream().map(archiveMapper::archiveToArchiveDto)
         .collect(Collectors.toList());
     }
     
@@ -78,14 +75,14 @@ public class ArchiveService {
             throw new InternalServerErrorException("Could not create app folder.", e);
         }
 
-        Archive archive = ArchiveMapper.INSTANCE.archiveDtoToArchive(archiveDto);
+        Archive archive = archiveMapper.archiveDtoToArchive(archiveDto);
         archive.setId(archiveId);
         archive.setCreatedAt(helpers.today.apply(0));
         archive.setUpdatedAt(helpers.today.apply(0));
         archive.setCompleted(false);
         archiveRepository.update(archive);
 
-        return ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
+        return archiveMapper.archiveToArchiveDto(archive);
     }
 
     @Transactional
@@ -95,7 +92,7 @@ public class ArchiveService {
             throw new NotFoundException("Archive not found.");
         }
 
-        ArchiveDto archiveDto = ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
+        ArchiveDto archiveDto = archiveMapper.archiveToArchiveDto(archive);
         
         Path chunkPath = helpers.getPathOfChunkByIndex(archiveDto.getAppId(), archiveId, chunkIndex);
         byte[] chunkBytes;
@@ -128,7 +125,7 @@ public class ArchiveService {
         
         List<ChunkMetadataDto> chunks = new ArrayList<ChunkMetadataDto>();
 
-        ArchiveDto archiveDto = ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
+        ArchiveDto archiveDto = archiveMapper.archiveToArchiveDto(archive);
         try {
             Files.list(helpers.getPathOfAppArchive(archiveDto.getAppId(), archiveDto.getId().toString())).forEach(chunkPath -> {
                 try {
@@ -164,7 +161,7 @@ public class ArchiveService {
             throw new NotFoundException("Archive not found.");
         }
 
-        ArchiveDto archiveDto = ArchiveMapper.INSTANCE.archiveToArchiveDto(archive);
+        ArchiveDto archiveDto = archiveMapper.archiveToArchiveDto(archive);
 
         if (chunkIndex > archiveDto.getChunks()) {
             throw new BadRequestException("Chunk index can't be more than chunks count.");
@@ -211,75 +208,5 @@ public class ArchiveService {
     public void saveAppChunk(String archiveId, int chunkSize, int chunkIndex, String chunkHash, boolean checkIntegrity, String base64data) {
         saveAppChunk(archiveId, chunkSize, chunkIndex, chunkHash, checkIntegrity, base64data.getBytes());
     }
-
-
-    // /*
-    //  * Get a chunk of the app archive.
-    //  * 
-    //  */
-    // public AppChunkDto getAppChunk(Long appId, Long chunkIndex) {
-    //     App app = appRepository.findById(appId);
-    //     if (app == null) {
-    //         throw new NotFoundException("App does not exist.");
-    //     }
-
-    //     Path appPath = helpers.getPathOfApp(appId);
-    //     if (!Files.exists(appPath)) {
-    //         throw new NotFoundException("App does not exist.");
-    //     }
-        
-    //     AppMetadataDto appMetadataDto = getAppMetadata(appId);
-
-    //     byte[] bytes = chunkManager.readChunkFromFile(helpers.getPathOfApp(appId), chunkIndex);
-
-    //     String hash = helpers.getHashOfBytes(bytes);
-
-    //     return AppChunkDto.builder()
-    //     .appArchive(appMetadataDto.getArchive())
-    //     .data(bytes)
-    //     .chunkIndex(chunkIndex)
-    //     .chunkSize(bytes.length)
-    //     .chunksCount(appMetadataDto.getChunksCount())
-    //     .hash(hash)
-    //     // .appSize(appMetadataDto.getSize())
-    //     .build();
-    // }
-
-    // public AppDto getAppInfo(Long appId) {
-    //     App app = appRepository.findById(appId);
-    //     if (app == null) {
-    //         throw new NotFoundException("App does not exist.");
-    //     }
-
-    //     return AppMapper.INSTANCE.appToAppDto(app);
-    // }
-
-    // public AppMetadataDto getAppMetadata(Long appId) {
-    //     App app = appRepository.findById(appId);
-    //     if (app == null) {
-    //         throw new NotFoundException("App does not exist.");
-    //     }
-
-    //     Path appPath = helpers.getPathOfApp(appId);
-    //     // long appSize = helpers.getAppSize(appPath);
-    //     // String hash = helpers.getAppHash(appPath);
-    //     long chunksCount = -1;
-
-    //     try {
-    //         chunksCount = Files.list(appPath).count();
-    //     } catch (IOException e) {
-    //         throw new InternalServerErrorException("Could not count chunks.");
-    //     }
-
-    //     return AppMetadataDto.builder()
-    //     .appId(appId)
-    //     .archive(app.getArchive())
-    //     .chunksCount(chunksCount)
-    //     // .hash(hash)
-    //     // .size(appSize)
-    //     .build();
-    // }
-
-
 
 }

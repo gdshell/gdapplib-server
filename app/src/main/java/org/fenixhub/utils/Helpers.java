@@ -22,8 +22,7 @@ import javax.ws.rs.NotFoundException;
 @ApplicationScoped
 public class Helpers {
 
-    @Inject
-    private Configuration configuration;
+    @Inject Configuration configuration;
 
     public Path getAppRootFolder() {
         return Path.of(System.getProperty("user.home") + "/" + configuration.getRootFolder());

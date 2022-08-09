@@ -13,8 +13,7 @@ import org.fenixhub.entities.App;
 @ApplicationScoped
 public class AppRepository {
 
-    @Inject
-    private EntityManager entityManager;
+    @Inject EntityManager entityManager;
 
     public App findById(Integer id) {
         return entityManager.find(App.class, id);

@@ -1,6 +1,5 @@
 package org.fenixhub.services;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -8,7 +7,6 @@ import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.jwt.Claim;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.fenixhub.utils.Configuration;
@@ -36,12 +34,12 @@ public class JWTService {
 	 * @param userRoles The roles of the user which to generate the JWT
 	 * @return A string that represent a valid JWT with an expired time of {@link #expirationTimeJwt}
 	 */
-	public String generateJWT(String sub, String upn, boolean emailVerified, String[] groups) {
+	public String generateJWT(String sub, String upn, boolean emailVerified, Set<String> roles) {
 		return Jwt
 			.subject(sub)										// User ID
 			.upn(upn)											// User email
 			.claim(Claims.email_verified, emailVerified)
-			.groups(new HashSet<>(Arrays.asList(groups)))
+			.groups(new HashSet<>(roles))
 			.expiresIn(configuration.getExpirationTimeJwt())	// Expiration time of the JWT
 			.issuedAt(helpers.today.apply(0))			// Issued time of the JWT
 			.issuer(configuration.getIssuer())

@@ -15,8 +15,7 @@ import org.fenixhub.entities.Archive;
 @ApplicationScoped
 public class ArchiveRepository {
 
-    @Inject
-    private EntityManager entityManager;
+    @Inject EntityManager entityManager;
 
     public Archive findById(String id) {
         return entityManager.find(Archive.class, id);

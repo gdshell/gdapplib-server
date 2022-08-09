@@ -1,14 +1,21 @@
 package org.fenixhub.mapper;
 
-import org.fenixhub.dto.UserDto;
-import org.fenixhub.entities.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import java.util.List;
 
-@Mapper
+import org.fenixhub.dto.UserDto;
+import org.fenixhub.dto.UserRoleDto;
+import org.fenixhub.entities.User;
+import org.fenixhub.entities.UserRole;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+
+@Mapper(componentModel = MappingConstants.ComponentModel.CDI)
 public interface UserMapper {
-    UserMapper INSTANCE = Mappers.getMapper( UserMapper.class ); 
  
     UserDto userToUserDto(User user);
     User userDtoToUser(UserDto userDto);
+
+    List<UserRoleDto> userRoleToUserRoleDto(List<UserRole> userRole);
+    List<UserRole> userRoleDtoToUserRole(List<UserRoleDto> userRoleDto);
+
 }

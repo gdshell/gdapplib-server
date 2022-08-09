@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 @Builder
 @RegisterForReflection
-public class ChunkMetadataDto {
-    private String hash;
-    private int chunkIndex;
-    private long chunkSize;
-    private String encoding;
+public class UserRoleDto {
+    
+    private String userId;
+    private Integer roleId;
+
 }

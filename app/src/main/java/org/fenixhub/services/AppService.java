@@ -26,14 +26,13 @@ public class AppService {
     
     private static final Logger LOG = Logger.getLogger(AppService.class);
     
-    @Inject
-    private Helpers helpers;
+    @Inject Helpers helpers;
     
-    @Inject
-    private AppRepository appRepository;
+    @Inject AppRepository appRepository;
 
-    @Inject
-    private JWTService jwtService;
+    @Inject JWTService jwtService;
+
+    @Inject AppMapper appMapper;
 
     @Transactional
     public boolean checkIfAppExists(Integer appId) {
@@ -46,7 +45,7 @@ public class AppService {
             throw new NotFoundException("App not found.");
         }
         
-        return AppMapper.INSTANCE.appToAppDto(appRepository.findById(appId));
+        return appMapper.appToAppDto(appRepository.findById(appId));
     }
 
     /*
@@ -75,7 +74,7 @@ public class AppService {
             throw new InternalServerErrorException("Could not create app folder.", e);
         }
 
-        return AppMapper.INSTANCE.appToAppDto(app);
+        return appMapper.appToAppDto(app);
     }
 
     @Transactional
