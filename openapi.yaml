@@ -1,0 +1,329 @@
+openapi: 3.0.3
+info:
+  title: GDAppLib-Server API
+  version: 2.0.0
+paths:
+  /api/v1/apps:
+    put:
+      tags:
+        - App Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppDto'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Not Authorized
+        '403':
+          description: Not Allowed
+      security:
+        - SecurityScheme:
+            - DEVELOPER
+  /api/v1/apps/{appId}:
+    get:
+      tags:
+        - App Resource
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            format: int32
+            type: integer
+      responses:
+        '200':
+          description: OK
+    patch:
+      tags:
+        - App Resource
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            format: int32
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppDto'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Not Authorized
+        '403':
+          description: Not Allowed
+      security:
+        - SecurityScheme:
+            - DEVELOPER
+  /api/v1/archives:
+    get:
+      tags:
+        - Archive Resource
+      parameters:
+        - name: appId
+          in: query
+          required: true
+          schema:
+            format: int32
+            minimum: 0
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/v1/archives/initialize:
+    post:
+      tags:
+        - Archive Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchiveDto'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Not Authorized
+        '403':
+          description: Not Allowed
+      security:
+        - SecurityScheme:
+            - DEVELOPER
+  /api/v1/archives/{archiveId}/chunks:
+    get:
+      tags:
+        - Archive Resource
+      parameters:
+        - name: archiveId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    patch:
+      tags:
+        - Archive Resource
+      parameters:
+        - name: archiveId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Check-Integrity
+          in: header
+          schema:
+            type: boolean
+        - name: X-Chunk-Hash
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Chunk-Index
+          in: header
+          required: true
+          schema:
+            format: int32
+            type: integer
+        - name: X-Chunk-Size
+          in: header
+          required: true
+          schema:
+            format: int32
+            minimum: 1
+            type: integer
+      requestBody:
+        content:
+          message/byterange:
+            schema:
+              format: binary
+              type: string
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Not Authorized
+        '403':
+          description: Not Allowed
+      security:
+        - SecurityScheme:
+            - DEVELOPER
+  /api/v1/archives/{archiveId}/chunks/{chunkIndex}:
+    get:
+      tags:
+        - Archive Resource
+      parameters:
+        - name: archiveId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chunkIndex
+          in: path
+          required: true
+          schema:
+            format: int32
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDto'
+      responses:
+        '200':
+          description: OK
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Authentication Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenDto'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Not Authorized
+        '403':
+          description: Not Allowed
+      security:
+        - SecurityScheme: []
+  /api/v1/auth/register:
+    put:
+      tags:
+        - Authentication Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDto'
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    AppDto:
+      required:
+        - id
+        - name
+        - developer
+        - registeredAt
+        - updatedAt
+        - published
+      type: object
+      properties:
+        id:
+          format: int32
+          type: integer
+        name:
+          pattern: \S
+          type: string
+        developer:
+          pattern: \S
+          type: string
+        registeredAt:
+          format: int32
+          type: integer
+        updatedAt:
+          format: int32
+          type: integer
+        published:
+          type: boolean
+    ArchiveDto:
+      required:
+        - id
+        - completed
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        appId:
+          format: int32
+          type: integer
+        archive:
+          type: string
+        hash:
+          type: string
+        size:
+          format: int64
+          type: integer
+        chunks:
+          type: integer
+        version:
+          type: string
+        completed:
+          type: boolean
+    TokenDto:
+      type: object
+      properties:
+        idToken:
+          type: string
+        tokenType:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          format: int32
+          type: integer
+    UUID:
+      format: uuid
+      pattern: '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}'
+      type: string
+    UserDto:
+      required:
+        - id
+        - registeredAt
+        - emailVerified
+        - roles
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        registeredAt:
+          format: int32
+          type: integer
+        emailVerified:
+          type: boolean
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRoleDto'
+    UserRoleDto:
+      type: object
+      properties:
+        userId:
+          type: string
+        roleId:
+          format: int32
+          type: integer
+  securitySchemes:
+    SecurityScheme:
+      type: http
+      description: Authentication
+      scheme: bearer
+      bearerFormat: JWT

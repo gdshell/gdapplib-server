@@ -53,7 +53,7 @@ CREATE TABLE app_mgr.user (
 	"password" varchar NOT NULL,
 	registered_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
 	email_verified boolean NOT NULL DEFAULT false,
-	CONSTRAINT user_pkey PRIMARY KEY (id) ON DELETE CASCADE
+	CONSTRAINT user_pkey PRIMARY KEY (id)
 );
 
 -- app_mgr.refresh_token definition

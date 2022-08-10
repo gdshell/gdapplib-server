@@ -18,11 +18,9 @@ import io.smallrye.jwt.build.Jwt;
 public class JWTService {
 
 
-	@Inject
-	private Configuration configuration;
+	@Inject Configuration configuration;
 
-	@Inject
-	private Helpers	helpers;
+	@Inject Helpers	helpers;
 	
 	@Inject
 	JsonWebToken jwt;

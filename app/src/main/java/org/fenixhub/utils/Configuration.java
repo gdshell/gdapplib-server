@@ -13,27 +13,27 @@ import lombok.Getter;
 public class Configuration {
 
     @ConfigProperty(name = "app.range.units", defaultValue = "bytes")
-    private String rangeUnits;
+    String rangeUnits;
 
     @ConfigProperty(name = "app.root.folder", defaultValue = "gdapplib")
-    private String rootFolder;
+    String rootFolder;
     
     @ConfigProperty(name = "app.hash.algorithm", defaultValue = "SHA-256")
-    private String hashAlgorithm;
+    String hashAlgorithm;
 
     @ConfigProperty(name = "app.archive.type", defaultValue = "tar")
-    private String archiveType;
+    String archiveType;
 
     @ConfigProperty(name = "app.compression.type", defaultValue = "br")
-    private String compressionType;
+    String compressionType;
     
     @ConfigProperty(name = "app.archive.chunk.delimiter", defaultValue = "_")
-    private String archiveChunkDelimiter;
+    String archiveChunkDelimiter;
 
 	@ConfigProperty(name = "mp.jwt.verify.issuer")
-	private String issuer;
+	String issuer;
 
 	@ConfigProperty(name = "jwt.expiration")
-	private int expirationTimeJwt;
+	int expirationTimeJwt;
     
 }
