@@ -64,7 +64,7 @@ CREATE TABLE app_mgr.user (
 
 CREATE TABLE app_mgr.refresh_token (
 	id serial4 NOT NULL,
-	created_at int4 NOT NULL,
+	created_at int4 NOT NULL DEFAULT floor(date_part('epoch'::text, now())),
 	token varchar(255) NOT NULL,
 	user_id varchar(255) NOT NULL,
 	CONSTRAINT refresh_token_pkey PRIMARY KEY (id),

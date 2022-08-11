@@ -1,6 +1,6 @@
 package org.fenixhub.dto;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,13 +17,13 @@ import lombok.Data;
 @RegisterForReflection
 public class UserDto {
     
-    @NotNull
+    @NotNull(groups = { UserView.Public.class })
     private String id;
     
-    @NotBlank(groups = UserView.Registration.class)
+    @NotBlank(groups = {UserView.Registration.class, UserView.Public.class})
     private String username;
     
-    @NotBlank(groups = {UserView.Registration.class, UserView.Login.class})
+    @NotBlank(groups = {UserView.Registration.class, UserView.Login.class, UserView.Public.class})
     private String email;
 
     @NotBlank(groups = {UserView.Registration.class, UserView.Login.class})
@@ -36,7 +36,7 @@ public class UserDto {
     private Boolean emailVerified;
 
     @NotNull
-    private List<UserRoleDto> roles;
+    private Set<UserRoleDto> roles;
     
     public void cryptPassword() {
         password = BcryptUtil.bcryptHash(password);

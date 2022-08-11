@@ -75,10 +75,6 @@ public class AuthenticationService {
         .build();
         userRoleRepository.persist(userRole);
 
-        user.setRoles(Set.of(userRole));
-        userRepository.update(user);
-
-
         return user.getId();
     }
 
@@ -90,6 +86,7 @@ public class AuthenticationService {
             RefreshToken newRefreshToken = RefreshToken.builder()
             .userId(userDto.getId())
             .token(jwtService.generateRefreshToken())
+            .createdAt(helpers.today.apply(0))
             .build();
             refreshTokenRepository.persist(newRefreshToken);
             return Optional.of(newRefreshToken);

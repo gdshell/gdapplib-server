@@ -1,6 +1,6 @@
 package org.fenixhub.mapper;
 
-import java.util.List;
+import java.util.Set;
 
 import org.fenixhub.dto.UserDto;
 import org.fenixhub.dto.UserRoleDto;
@@ -15,7 +15,7 @@ public interface UserMapper {
     UserDto userToUserDto(User user);
     User userDtoToUser(UserDto userDto);
 
-    List<UserRoleDto> userRoleToUserRoleDto(List<UserRole> userRole);
-    List<UserRole> userRoleDtoToUserRole(List<UserRoleDto> userRoleDto);
+    Set<UserRoleDto> userRoleToUserRoleDto(Set<UserRole> userRole);
+    Set<UserRole> userRoleDtoToUserRole(Set<UserRoleDto> userRoleDto);
 
 }

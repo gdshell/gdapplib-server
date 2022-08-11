@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.fenixhub</groupId>
   <artifactId>gdapplib-server</artifactId>
-  <version>2.0.0</version>
+  <version>3.0.0</version>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.release>11</maven.compiler.release>

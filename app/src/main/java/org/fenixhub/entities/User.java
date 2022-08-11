@@ -51,7 +51,6 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified;
 
-    // @Transient
     @OneToMany(targetEntity = UserRole.class, fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_id")
     private Set<UserRole> roles;
