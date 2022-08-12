@@ -26,10 +26,13 @@ import org.fenixhub.repository.ArchiveRepository;
 import org.fenixhub.utils.ChunkManager;
 import org.fenixhub.utils.Configuration;
 import org.fenixhub.utils.Helpers;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class ArchiveService {
     
+    private static final Logger LOG = Logger.getLogger(ArchiveService.class);
+
     @Inject Configuration configuration;
     
     @Inject Helpers helpers;
@@ -58,7 +61,7 @@ public class ArchiveService {
             throw new NotFoundException("App not found.");
         }
 
-        if (archiveRepository.checkIfExists("version = :version", Map.of("version", archiveDto.getVersion()))) {
+        if (archiveRepository.checkIfExists("app_id = :appId AND version = :version", Map.of("version", archiveDto.getVersion(), "appId", archiveDto.getAppId()))) {
             throw new BadRequestException("Archive with such version already exists.");
         }
 
@@ -71,6 +74,7 @@ public class ArchiveService {
         Path archivePath = helpers.getPathOfAppArchive(archiveDto.getAppId(), archiveId);
         try {
             Files.createDirectories(archivePath);
+            
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not create app folder.", e);
         }
@@ -198,6 +202,7 @@ public class ArchiveService {
             archiveRepository.setCompleted(archive, true);
         }
 
+        LOG.infof("Chunk %s saved for app %s at path %s", chunkIndex, archiveDto.getAppId(), chunkPath);
     }
 
 

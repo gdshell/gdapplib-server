@@ -18,6 +18,10 @@
 #
 ###
 FROM quay.io/quarkus/quarkus-micro-image:1.0
+
+ARG JAVA_OPTS
+ENV _JAVA_OPTS=$JAVA_OPTS
+
 WORKDIR /work/
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
@@ -27,4 +31,4 @@ COPY --chown=1001:root target/*-runner /work/application
 EXPOSE 8080
 USER 1001
 
-CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
+ENTRYPOINT ["/bin/bash", "-c", "./application -Dquarkus.http.host=0.0.0.0 ${_JAVA_OPTS}"]

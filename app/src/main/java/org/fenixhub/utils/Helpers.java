@@ -7,22 +7,33 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Base64;
 import java.util.UUID;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+
+import org.jboss.logging.Logger;
+
+import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
 public class Helpers {
 
     @Inject Configuration configuration;
+
+    private static final Logger LOG = Logger.getLogger(Helpers.class);
+
+    public void onStart(@Observes StartupEvent ev) {
+        LOG.infof("System User Home: %s", System.getProperty("user.home"));
+    }
 
     public Path getAppRootFolder() {
         return Path.of(System.getProperty("user.home") + "/" + configuration.getRootFolder());
@@ -31,7 +42,11 @@ public class Helpers {
     public Path getPathOfApp(Integer appId) {
         Path path = getAppRootFolder().resolve(appId.toString());
         if (!Files.exists(path)) {
-            throw new InternalServerErrorException("App folder does not exist.");
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Could not create app folder.");
+            }
         }
         return path;
     }
@@ -39,7 +54,12 @@ public class Helpers {
     public Path getPathOfAppArchive(Integer appId, String archiveId) {
         Path path = getPathOfApp(appId).resolve(archiveId);
         if (!Files.exists(getAppRootFolder())) {
-            throw new InternalServerErrorException("App archive folder does not exist.");
+            // Create the app folder if it doesn't exist.
+            try {
+                Files.createDirectories(getPathOfApp(appId));
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Could not create app folder.");
+            }
         }
         return path;
     }

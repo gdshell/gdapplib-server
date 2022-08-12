@@ -34,7 +34,7 @@ public class ArchiveRepository {
         return query.getResultList();
     }
 
-    public boolean checkIfExists(String whereQuery, Map<String, String> whereValues) {
+    public boolean checkIfExists(String whereQuery, Map<String, Object> whereValues) {
         Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM app_mgr.archive WHERE " + whereQuery);
         whereValues.forEach((key, value) -> query.setParameter(key, value));
         return !query.getSingleResult().equals(BigInteger.ZERO);
