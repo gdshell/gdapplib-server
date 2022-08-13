@@ -28,6 +28,14 @@ RUN chown 1001 /work \
     && chown 1001:root /work
 COPY --chown=1001:root target/*-runner /work/application
 
+WORKDIR /home/
+RUN mkdir /home/gdapplib \
+    && chown 1001 /home/gdapplib \
+    && chmod "g+rwX" /home/gdapplib \
+    && chown 1001:root /home/gdapplib
+
+WORKDIR /work/
+
 EXPOSE 8080
 USER 1001
 

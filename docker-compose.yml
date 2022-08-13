@@ -1,12 +1,12 @@
 version: '3.9'
 
 services:
-  manager:
+  gdapplib-manager:
     build:
       context: ./app
       dockerfile: ./src/main/docker/Dockerfile.native-micro
       args:
-        - JAVA_OPTS=-Duser.home=/work
+        - JAVA_OPTS=-Duser.home=/home
     image: "fenixhub/gdapplib-manager:latest"
     mem_limit: 128m
     container_name: gdapplib-manager
@@ -20,7 +20,7 @@ services:
     networks:
       - gdapplib-server
     volumes:
-      - /home/gdapplib:/work/gdapplib:rw
+      - archives:/home/gdapplib
 
   gdapplib-db:
     build:
@@ -34,7 +34,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PWD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
-      - gdapplib-db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
@@ -49,4 +49,5 @@ networks:
     driver: bridge
 
 volumes:
-  gdapplib-db:
+  db:
+  archives:
