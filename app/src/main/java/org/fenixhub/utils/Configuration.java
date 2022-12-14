@@ -2,6 +2,7 @@ package org.fenixhub.utils;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import io.quarkus.runtime.annotations.ConfigItem;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.quarkus.runtime.Startup;
@@ -35,5 +36,7 @@ public class Configuration {
 
 	@ConfigProperty(name = "jwt.expiration")
 	int expirationTimeJwt;
-    
+
+    @ConfigItem(name = "refreshToken.expiration")
+    int expirationTimeRefreshToken;
 }

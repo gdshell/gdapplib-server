@@ -1,4 +1,4 @@
-package org.fenixhub.services;
+package org.fenixhub.service;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ import javax.ws.rs.NotFoundException;
 import org.fenixhub.dto.AppChunkDto;
 import org.fenixhub.dto.ArchiveDto;
 import org.fenixhub.dto.ChunkMetadataDto;
-import org.fenixhub.entities.Archive;
+import org.fenixhub.entity.Archive;
 import org.fenixhub.mapper.ArchiveMapper;
 import org.fenixhub.repository.ArchiveRepository;
 import org.fenixhub.utils.ChunkManager;

@@ -1,3 +1,4 @@
-.vscode/
-app/target/*
-app/src/main/resources/keys/*
+target/*
+keys/*
+*.iml
+.idea/*

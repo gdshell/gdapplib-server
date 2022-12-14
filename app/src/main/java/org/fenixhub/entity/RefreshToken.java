@@ -1,16 +1,12 @@
-package org.fenixhub.entities;
+package org.fenixhub.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
 
 @Data
 @Builder
@@ -19,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "refresh_token")
-public class RefreshToken {
+public class RefreshToken extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,5 +29,9 @@ public class RefreshToken {
 
     @Column(name = "created_at", nullable = false)
     private Integer createdAt;
+
+    @Column(name = "expires_at", nullable = false)
+    private Integer expiresAt;
+
 
 }

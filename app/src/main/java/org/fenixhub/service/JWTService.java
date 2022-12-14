@@ -1,4 +1,4 @@
-package org.fenixhub.services;
+package org.fenixhub.service;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -9,6 +9,7 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.fenixhub.entity.RefreshToken;
 import org.fenixhub.utils.Configuration;
 import org.fenixhub.utils.Helpers;
 
@@ -82,4 +83,11 @@ public class JWTService {
 		return UUID.randomUUID().toString();
 	}
 
+	public boolean isExpired() {
+		return jwt.getExpirationTime() >= configuration.getExpirationTimeJwt();
+	}
+
+	public boolean isRefreshTokenExpired(RefreshToken refreshToken) {
+		return refreshToken.getExpiresAt() >= configuration.getExpirationTimeRefreshToken();
+	}
 }

@@ -1,16 +1,14 @@
 package org.fenixhub.dto;
 
-import java.util.Set;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.fenixhub.dto.views.UserView;
-
-import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Builder;
 import lombok.Data;
+import org.fenixhub.dto.views.UserView;
+import org.mindrot.jbcrypt.BCrypt;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 @Data
 @Builder
@@ -36,9 +34,10 @@ public class UserDto {
     private Boolean emailVerified;
 
     @NotNull
-    private Set<UserRoleDto> roles;
+    private Set<ERole> roles;
     
-    public void cryptPassword() {
-        password = BcryptUtil.bcryptHash(password);
+    public String cryptPassword() {
+        password = BCrypt.hashpw(password, BCrypt.gensalt());
+        return password;
     }
 }

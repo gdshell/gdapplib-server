@@ -1,7 +1,7 @@
 package org.fenixhub.mapper;
 
 import org.fenixhub.dto.ArchiveDto;
-import org.fenixhub.entities.Archive;
+import org.fenixhub.entity.Archive;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 

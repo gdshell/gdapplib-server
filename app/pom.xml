@@ -13,7 +13,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>2.11.2.Final</quarkus.platform.version>
+    <quarkus.platform.version>2.14.3.Final</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
   </properties>
@@ -35,7 +35,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jackson</artifactId>
+      <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -55,10 +55,6 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-security-jpa</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
@@ -66,10 +62,6 @@
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.logmanager</groupId>
-      <artifactId>log4j2-jboss-logmanager</artifactId>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -81,13 +73,16 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-validator</artifactId>
     </dependency>
+    <!-- Hibernate Reactive dependency -->
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-hibernate-orm</artifactId>
+      <artifactId>quarkus-hibernate-reactive-panache</artifactId>
     </dependency>
+
+    <!-- Reactive SQL client for PostgreSQL -->
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jdbc-postgresql</artifactId>
+      <artifactId>quarkus-reactive-pg-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
@@ -99,6 +94,11 @@
       <artifactId>mapstruct-processor</artifactId>
       <version>${org.mapstruct.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
     </dependency>
   </dependencies>
   <build>

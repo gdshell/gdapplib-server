@@ -6,21 +6,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-import org.fenixhub.entities.UserRole;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
+import io.smallrye.mutiny.Uni;
+import org.fenixhub.entity.UserRole;
 
 @ApplicationScoped
-public class UserRoleRepository {
-    
-    @Inject EntityManager entityManager;
+public class UserRoleRepository implements PanacheRepositoryBase<UserRole, UserRole> {
 
-    public void persist(UserRole userRole) {
-        entityManager.persist(userRole);
-    }
-
-    public List<UserRole> getRolesByUserId(String userId) {
-        return entityManager.createNativeQuery("SELECT * FROM app_mgr.user_role WHERE user_id = :userId", UserRole.class)
-        .setParameter("userId", userId)
-        .getResultList();
+    public Uni<List<UserRole>> getRolesOfUserId(String userId) {
+        return find("userId", userId).list();
     }
 
 }

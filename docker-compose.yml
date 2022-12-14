@@ -40,6 +40,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 6
+    ports:
+      - 5432:5432
     networks:
       - gdapplib-server
 

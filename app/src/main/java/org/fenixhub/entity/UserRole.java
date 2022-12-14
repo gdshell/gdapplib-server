@@ -1,4 +1,4 @@
-package org.fenixhub.entities;
+package org.fenixhub.entity;
 
 import java.io.Serializable;
 
@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.Table;
 
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "user_role")
 @IdClass(UserRole.class)
-public class UserRole implements Serializable {
+public class UserRole extends PanacheEntityBase implements Serializable {
     
     @Id
     @Column(name = "user_id", nullable = false)

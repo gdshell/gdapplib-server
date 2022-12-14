@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.fenixhub.entities.Archive;
+import org.fenixhub.entity.Archive;
 
 @ApplicationScoped
 public class ArchiveRepository {

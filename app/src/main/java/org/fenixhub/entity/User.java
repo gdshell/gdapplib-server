@@ -1,22 +1,14 @@
-package org.fenixhub.entities;
+package org.fenixhub.entity;
 
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
-
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
+import java.util.Set;
 
 @Data
 @Builder
@@ -25,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user")
-public class User {
+public class User extends PanacheEntityBase {
 
 	@Id 
 	@Column(name="id", length=36, updatable = false, nullable = false)
@@ -53,6 +45,6 @@ public class User {
 
     @OneToMany(targetEntity = UserRole.class, fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_id")
-    private Set<UserRole> roles;
+    private Set<Role> roles;
 
 }

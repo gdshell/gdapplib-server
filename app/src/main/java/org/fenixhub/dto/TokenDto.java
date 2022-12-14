@@ -15,7 +15,6 @@ public class TokenDto {
 
     private String idToken;
     private String tokenType;
-
     @NotNull(groups = {TokenView.Refresh.class})
     private String refreshToken;
     private Integer expiresIn;

@@ -132,8 +132,7 @@ public class Helpers {
         return hash;
     }
 
-    public IntFunction<Integer> today = (offset) -> (int) ((System.currentTimeMillis() + offset) / 1000) ;
-
+    public IntFunction<Integer> today = (offset) -> (int) ( (System.currentTimeMillis() / 1000) + offset ) ;
 
     public String generateUUID() {
         return UUID.randomUUID().toString();

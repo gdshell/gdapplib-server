@@ -1,4 +1,4 @@
-package org.fenixhub.entities;
+package org.fenixhub.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

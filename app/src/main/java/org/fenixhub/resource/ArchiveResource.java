@@ -1,6 +1,11 @@
-package org.fenixhub.resources;
+package org.fenixhub.resource;
 
-import java.util.List;
+import io.quarkus.cache.CacheResult;
+import org.fenixhub.dto.AppChunkDto;
+import org.fenixhub.dto.ArchiveDto;
+import org.fenixhub.dto.ChunkMetadataDto;
+import org.fenixhub.dto.views.ArchiveView;
+import org.fenixhub.service.ArchiveService;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -10,34 +15,19 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.groups.ConvertGroup;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
-import org.fenixhub.dto.AppChunkDto;
-import org.fenixhub.dto.ArchiveDto;
-import org.fenixhub.dto.ChunkMetadataDto;
-import org.fenixhub.dto.views.ArchiveView;
-import org.fenixhub.services.ArchiveService;
-
-import io.quarkus.cache.CacheResult;
-
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 @Path("/archives")
 public class ArchiveResource {
     
     @Inject ArchiveService archiveService;
 
     @GET
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("")
     public Response getArchives(
         @QueryParam ("appId") @NotNull @Min(value = 0) Integer appId
@@ -46,10 +36,8 @@ public class ArchiveResource {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/initialize")
-    @RolesAllowed({ "DEVELOPER" })
+    @RolesAllowed({"developer"})
     public Response initializeAppArchive(
         @Valid @ConvertGroup(to = ArchiveView.Initialize.class) ArchiveDto archiveDto
     ) {
@@ -70,9 +58,8 @@ public class ArchiveResource {
      */
     @PATCH
     @Consumes("text/plain")
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{archiveId}/chunks")
-    @RolesAllowed("DEVELOPER")
+    @RolesAllowed({"developer"})
     public Response uploadChunk(
         @PathParam("archiveId") String archiveId,
         @HeaderParam("X-Chunk-Size") @NotNull @Min(value = 1) Integer chunkSize,
@@ -100,7 +87,7 @@ public class ArchiveResource {
     @Consumes("message/byterange")
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{archiveId}/chunks")
-    @RolesAllowed("DEVELOPER")
+    @RolesAllowed({"developer"})
     public Response uploadChunk(
         @PathParam("archiveId") String archiveId,
         @HeaderParam("X-Chunk-Size") @NotNull @Min(value = 1) Integer chunkSize,
